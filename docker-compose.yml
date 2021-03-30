@@ -1,10 +1,10 @@
-version: '3.6'
+version: "3.6"
 
 services:
   web:
     build:
       context: .
-    image: "onguard-dev"
+    image: "buzzr-dev"
     stdin_open: true
     tty: true
     env_file:
@@ -17,7 +17,6 @@ services:
     depends_on:
       - "database-dev"
 
-
   database-dev:
     image: mysql:5.7
     volumes:
@@ -25,10 +24,8 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${DEV_DB_PASSWORD}
-      MYSQL_DATABASE: onguard
+      MYSQL_DATABASE: buzzr
       MYSQL_USER: admin
       MYSQL_PASSWORD: ${DEV_DB_PASSWORD}
     ports:
       - "3306:3306"
-  
-  
