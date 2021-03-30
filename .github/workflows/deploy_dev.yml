@@ -12,8 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ENVIRONMENT: DEV
-      ELB_APPLICATION_NAME: onguard-dev-app
-      ELB_ENVIRONMENT_NAME: onguard-dev-env
+      ELB_APPLICATION_NAME: buzzr-dev-app
+      ELB_ENVIRONMENT_NAME: buzzr-dev-env
     steps:
       # Checks-out repo
       - uses: actions/checkout@v2
