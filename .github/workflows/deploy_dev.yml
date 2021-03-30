@@ -43,7 +43,7 @@ jobs:
           sed -i 's~DOCKER_ECR_FILE~${{env.api_ecr_repo}}:${{ github.sha }}~g' Dockerrun.aws.json
           cat Dockerrun.aws.json
           zip docker_deploy.zip Dockerrun.aws.json
-          aws s3 cp docker_deploy.zip s3://onguard-elb-deploy-dev/docker_deploy_${GITHUB_SHA}.zip
+          aws s3 cp docker_deploy.zip s3://buzzr-elb-deploy-dev/docker_deploy_${GITHUB_SHA}.zip
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
