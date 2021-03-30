@@ -1,0 +1,34 @@
+version: '3.6'
+
+services:
+  web:
+    build:
+      context: .
+    image: "onguard-dev"
+    stdin_open: true
+    tty: true
+    env_file:
+      - .envrc.docker
+    volumes:
+      - ./app:/app
+
+    ports:
+      - "5001:80"
+    depends_on:
+      - "database-dev"
+
+
+  database-dev:
+    image: mysql:5.7
+    volumes:
+      - ./init.sql:/data/application/init.sql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DEV_DB_PASSWORD}
+      MYSQL_DATABASE: onguard
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: ${DEV_DB_PASSWORD}
+    ports:
+      - "3306:3306"
+  
+  

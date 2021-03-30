@@ -1,0 +1,59 @@
+# workflow only runs on push
+name: Terraform apply
+# Controls when the action will run.
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [master]
+
+jobs:
+  # terraform apply job
+  apply:
+    runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: DEV
+      ELB_APPLICATION_NAME: onguard-dev-app
+      ELB_ENVIRONMENT_NAME: onguard-dev-env
+    steps:
+      # Checks-out repo
+      - uses: actions/checkout@v2
+
+      # install aws with configure on env vars
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.CICD_AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.CICD_AWS_SECRET }}
+          role-to-assume: arn:aws:iam::824611589741:role/cicd_role
+          role-session-name: cicd-dev
+          aws-region: us-east-1
+          role-duration-seconds: 1200
+
+      - name: set api_ecr_repo
+        uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.2
+        with:
+          ssm-path: api_ecr_repo
+          decryption: true
+      # replace docker run file with new image with github sha
+      - name: Update dockerrun.aws.json
+        id: replace-sed
+        env:
+          ECR_URI: "${{env.api_ecr_repo}}:$(echo ${GITHUB_SHA })"
+        run: |
+          sed -i 's~DOCKER_ECR_FILE~${{env.api_ecr_repo}}:${{ github.sha }}~g' Dockerrun.aws.json
+          cat Dockerrun.aws.json
+          zip docker_deploy.zip Dockerrun.aws.json
+          aws s3 cp docker_deploy.zip s3://onguard-elb-deploy-dev/docker_deploy_${GITHUB_SHA}.zip
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: docker build and push
+        run: |
+          docker build . --file Dockerfile --tag ${{env.api_ecr_repo}}:${GITHUB_SHA}
+          docker push ${{ env.api_ecr_repo }}:${GITHUB_SHA}
+
+      - name: update elasticbeanstalk application
+        run: |
+          aws elasticbeanstalk create-application-version --application-name ${{ env.ELB_APPLICATION_NAME }} --version-label ${GITHUB_SHA}  --source-bundle S3Bucket="onguard-elb-deploy-dev",S3Key="docker_deploy_${{ github.sha }}.zip" --auto-create-application
+          aws elasticbeanstalk update-environment --application-name ${{ env.ELB_APPLICATION_NAME }} --environment-name ${{ env.ELB_ENVIRONMENT_NAME }} --version-label ${GITHUB_SHA}

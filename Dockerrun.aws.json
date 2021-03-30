@@ -1,0 +1,9 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+      "Name": "DOCKER_ECR_FILE",
+      "Update": "true"
+    },
+    "Ports": [ { "ContainerPort" : 80 ,
+        "HostPort": "3000"} ]
+ }
