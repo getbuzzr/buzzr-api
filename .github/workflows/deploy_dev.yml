@@ -55,5 +55,5 @@ jobs:
 
       - name: update elasticbeanstalk application
         run: |
-          aws elasticbeanstalk create-application-version --application-name ${{ env.ELB_APPLICATION_NAME }} --version-label ${GITHUB_SHA}  --source-bundle S3Bucket="onguard-elb-deploy-dev",S3Key="docker_deploy_${{ github.sha }}.zip" --auto-create-application
+          aws elasticbeanstalk create-application-version --application-name ${{ env.ELB_APPLICATION_NAME }} --version-label ${GITHUB_SHA}  --source-bundle S3Bucket="buzzr-elb-deploy-dev",S3Key="docker_deploy_${{ github.sha }}.zip" --auto-create-application
           aws elasticbeanstalk update-environment --application-name ${{ env.ELB_APPLICATION_NAME }} --environment-name ${{ env.ELB_ENVIRONMENT_NAME }} --version-label ${GITHUB_SHA}
