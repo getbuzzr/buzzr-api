@@ -3,15 +3,9 @@ import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from schemas.UserSchema import UserSchemaOut, UserSchemaIn, UserSchemaPut
-from schemas.GroupSchema import GroupSchemaOut
 from schemas.FileSchema import PictureSchemaIn, S3PresignedUrlSchemaOut
-from schemas.CheckInSchema import CheckInSchemaOut
-from schemas.EmergencySchema import EmergencySchemaOut
 # Models
 from models.User import User, UserRoleEnum
-from models.CheckIn import CheckIn
-from models.Emergency import Emergency
-from models.Dispatcher import Dispatcher
 from models.S3StaticFileClient import S3StaticFileClient
 
 # Auth
@@ -21,60 +15,6 @@ from utils import serialize, validate_id_querystring
 from database import get_db
 
 router = APIRouter()
-
-
-@router.get('/{user_id}/groups', response_model=List[GroupSchemaOut])
-@has_user_read_update_perms
-def retrieve_user_groups(user_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
-    """Returns a list of groups that a user belongs to
-
-    Args:
-        user_id (int):id of the queried user
-        current_user (User): The current user making the call
-        session (Session): The current db session
-
-
-    Returns:
-        List[GroupSchemaOut]: returns a list of groups
-    """
-    user = session.query(User).get(user_id)
-    return [serialize(x) for x in user.groups]
-
-
-@router.get('/{user_id}/checkins', response_model=List[CheckInSchemaOut])
-@has_user_read_update_perms
-def retrieve_user_checkins(user_id: int,  current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
-    """Retreives a list of users checkin, default sort datetime descending
-
-    Args:
-        user_id (int):id of the user
-        current_user (User ): current user
-        session (Session): current db sesssion
-    Returns:
-        List[Checkins]
-    """
-    checkins = session.query(CheckIn).filter_by(
-        user_id=user_id).order_by(CheckIn.date_created.desc())
-    return [serialize(x) for x in checkins]
-
-
-@router.get('/{user_id}/emergencies', response_model=List[EmergencySchemaOut])
-@has_user_read_update_perms
-def retrieve_user_emergencies(user_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
-    """This function returns all the emergencies belonging to user
-
-    Args:
-        user_id (int):id of the user
-        current_user (User ): current user
-        session (Session): current db sesssion
-
-
-    Returns:
-       List[Checkin] 
-    """
-    emergencies = session.query(Emergency).filter_by(
-        user_id=user_id).order_by(Emergency.date_created.desc())
-    return [serialize(x) for x in emergencies]
 
 
 @router.get('', response_model=List[UserSchemaOut])
