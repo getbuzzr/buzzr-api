@@ -10,7 +10,7 @@ from utils import APP_ROOT
 class SESClient():
     """This is the model that interacts with the SES client 
     """
-    FROM_EMAIL = "hello@onguard.co"
+    FROM_EMAIL = "hello@getbuzzr.co"
 
     def __init__(self):
         # set up ses client

@@ -16,4 +16,4 @@ All deploys are handled with the CI/CD pipeline
 
 1. CI/CD pipeline generates a docker image
 2. Docker image is pushed to ECR
-3. Onguard api v2 elastic load balancer is updated with new docker images
+3. buzz elastic load balancer is updated with new docker images
