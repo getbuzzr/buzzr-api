@@ -5,9 +5,15 @@ import datetime
 from sqlalchemy.orm import relationship, backref
 import enum
 
+favorite_products = Table('favorite_products', Base.metadata,
+                          Column(
+                              'product_id', Integer, ForeignKey('product.id')),
+                          Column('user_id', Integer, ForeignKey('user.id')),
+                          Column('date_created', DateTime,
+                                 default=datetime.datetime.utcnow))
+
 
 class UserRoleEnum(enum.Enum):
-    super_admin = "super_admin"
     admin = "admin"
     user = 'user'
 
@@ -18,33 +24,29 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True)
-    cognito_sub = Column(String(36), nullable=True)
+    cognito_sub = Column(String(36))
     email = Column(String(50), nullable=False, unique=True)
     first_name = Column(String(100))
     last_name = Column(String(100))
     phone_number = Column(String(20))
-    address = Column(String(300))
-    postal_code = Column(String(30))
-    city = Column(String(30))
-    country = Column(String(30))
     additional_information = Column(String(200))
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
+    last_login = Column(DateTime, default=datetime.datetime.utcnow)
     apn_token = Column(String(100))
     fcm_token = Column(String(100))
-    profile_picture_url = Column(String(150))
+    profile_picture_url = Column(String(400))
+    referral_id = Column(String(10))
+    referrer_id = Column(Integer)
+    role = Column(Enum(UserRoleEnum), nullable=False, server_default="user")
+    favorite_products = relationship(
+        'Product', secondary=favorite_products, backref=backref('favorited_by', lazy='dynamic'))
+    addresses = relationship(
+        'Address', backref=backref('user', lazy='dynamic'))
 
     def is_admin(self):
-        """Check to see if user is an admin
-        @returns Boolean
-        """
-        if self.role.value in ['admin', 'super_admin']:
-            return True
-        return False
-
-    def is_super_admin(self):
         """Check to see if user is super admin
         @returns Boolean
         """
-        if self.role.value == "super_admin":
+        if self.role.value == "admin":
             return True
         return False
