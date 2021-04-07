@@ -14,4 +14,4 @@ class Category(Base):
     name = Column(String(100))
     department_id = Column(Integer, ForeignKey('department.id'))
     products = relationship(
-        'Product', backref=backref('category', lazy='dynamic'))
+        'Product', backref=backref('category'))

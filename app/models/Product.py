@@ -30,6 +30,6 @@ class Product(Base):
     weight = Column(Integer)
     cost = Column(Float)
     tags = relationship(
-        'Tag', secondary=product_tags, backref=backref('product', lazy='dynamic'))
+        'ProductTag', secondary=product_tags, backref=backref('product'))
     pictures = relationship(
-        'ProductImage', backref=backref('product', lazy='dynamic'))
+        'ProductImage', backref=backref('product'))

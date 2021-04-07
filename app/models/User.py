@@ -39,9 +39,9 @@ class User(Base):
     referrer_id = Column(Integer)
     role = Column(Enum(UserRoleEnum), nullable=False, server_default="user")
     favorite_products = relationship(
-        'Product', secondary=favorite_products, backref=backref('favorited_by', lazy='dynamic'))
+        'Product', secondary=favorite_products, backref=backref('favorited_by'))
     addresses = relationship(
-        'Address', backref=backref('user', lazy='dynamic'))
+        'Address', backref=backref('user'))
 
     def is_admin(self):
         """Check to see if user is super admin

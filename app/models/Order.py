@@ -31,7 +31,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     products_ordered = relationship(
-        'ProductOrdered', backref=backref('order', lazy='dynamic'))
+        'ProductOrdered', backref=backref('order'))
     feedback = Column(String(200))
     stars = Column(Enum(StarRatingEnum))
     cost = Column(Float)
