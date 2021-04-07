@@ -14,4 +14,4 @@ class Department(Base):
     picture_url = Column(String(400))
     name = Column(String(100))
     categories = relationship(
-        'Category', backref=backref('department', lazy='dynamic'))
+        'Category', backref=backref('department'))
