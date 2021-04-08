@@ -24,7 +24,6 @@ def retrieve_user_data(current_user: User = Depends(get_current_user), session: 
 
 @router.put('')
 def edit_user(user_put_body: UserSchemaPut, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
-    # Only super admins can edit role
     # iterate through all the attributes of the usereditschema
     for key, value in user_put_body.dict().items():
         # If key is being edited

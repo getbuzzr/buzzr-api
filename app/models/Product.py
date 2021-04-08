@@ -32,4 +32,4 @@ class Product(Base):
     tags = relationship(
         'ProductTag', secondary=product_tags, backref=backref('product'))
     pictures = relationship(
-        'ProductImage', backref=backref('product'))
+        'ProductImage', backref=backref('product'), lazy="joined")
