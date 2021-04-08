@@ -23,11 +23,11 @@ class UserSchemaPut(BaseModel):
     first_name: Optional[constr(min_length=2)]
     last_name: Optional[constr(min_length=1)]
     phone_number: Optional[constr(min_length=8)]
-    email: Optional[EmailStr]
     apn_token: Optional[str]
     fcm_token: Optional[str]
     profile_picture_url: Optional[str]
     role: Optional[UserRoleEnum]
+    additional_information: Optional[str]
 
 
 class UserSchemaOut(BaseModel):

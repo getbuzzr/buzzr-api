@@ -37,6 +37,7 @@ class User(Base):
     profile_picture_url = Column(String(400))
     referral_id = Column(String(10))
     referrer_id = Column(Integer)
+    stripe_id = Column(String(20))
     role = Column(Enum(UserRoleEnum), nullable=False, server_default="user")
     favorite_products = relationship(
         'Product', secondary=favorite_products, backref=backref('favorited_by'))

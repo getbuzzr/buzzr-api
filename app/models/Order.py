@@ -16,6 +16,7 @@ class StarRatingEnum(enum.Enum):
 
 class OrderStatusEnum(enum.Enum):
     failed = "failed"
+    checking_out = "checking_out"
     paid = "paid"
     preparing = "preparing"
     delivered = "delivered"
@@ -40,3 +41,4 @@ class Order(Base):
     last_updated = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     status = Column(Enum(OrderStatusEnum))
+    stripe_payment_intent = Column(String(30))

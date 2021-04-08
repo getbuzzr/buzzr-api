@@ -15,3 +15,4 @@ class ProductOrdered(Base):
     quantity = Column(SmallInteger)
     date_ordered = Column(DateTime, default=datetime.datetime.utcnow)
     order_id = Column(Integer, ForeignKey('order.id'))
+    product_id = Column(Integer, ForeignKey('product.id'))
