@@ -21,17 +21,17 @@ router = APIRouter()
 
 
 @router.get('', response_model=List[DepartmentSchemaOut])
-def get_departments(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+def get_departments(session: Session = Depends(get_db)):
     return [serialize(x) for x in session.query(Department).all()]
 
 
 @router.get('/{department_id}/categories', response_model=List[CategorySchemaOut])
-def get_department_categories(department_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+def get_department_categories(department_id: int, session: Session = Depends(get_db)):
     return [serialize(x) for x in session.query(Category).filter_by(department_id=department_id).all()]
 
 
 @router.get('/{department_id}/products', response_model=List[ProductSchemaOut])
-def get_department_products(department_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+def get_department_products(department_id: int,  session: Session = Depends(get_db)):
     return_product = []
     # serialize pictures/tags as they are one to many
     for product in session.query(Product).filter_by(department_id=department_id).all():

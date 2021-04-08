@@ -40,5 +40,5 @@ class Order(Base):
     date_delivered = Column(DateTime)
     last_updated = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    status = Column(Enum(OrderStatusEnum))
+    status = Column(Enum(OrderStatusEnum), server_default="checking_out")
     stripe_payment_intent = Column(String(30))
