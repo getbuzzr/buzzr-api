@@ -62,7 +62,12 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     for product_ordered in products_ordered:
         quantity = [
             x.quantity for x in order.products_ordered if x.product_id == product_ordered.id][0]
-        total_cost += quantity * product_ordered.cost
+        cost = product_ordered.cost
+        # if there is a discount, calculate it
+        if product_ordered.percent_discount != 0:
+            cost = product_ordered.cost * \
+                (100 - product_ordered.percent_discount) * 0.01
+        total_cost += quantity * cost
         product_ordered.stock -= quantity
 
     # no cost calculated
