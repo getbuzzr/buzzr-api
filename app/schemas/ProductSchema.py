@@ -16,3 +16,4 @@ class ProductSchemaOut(BaseModel):
     tags: Optional[List[str]]
     pictures: Optional[List[str]]
     id: int
+    percent_discount: int

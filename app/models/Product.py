@@ -29,6 +29,7 @@ class Product(Base):
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     weight = Column(Integer)
     cost = Column(Float)
+    percent_discount = Column(Integer, default=0)
     tags = relationship(
         'ProductTag', secondary=product_tags, backref=backref('product'))
     pictures = relationship(
