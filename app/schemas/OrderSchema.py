@@ -8,6 +8,7 @@ from schemas.ProductOrderSchema import ProductOrderSchemaOut, ProductOrderSchema
 
 class OrderSchemaIn(BaseModel):
     products_ordered: conlist(ProductOrderSchemaIn, min_items=1)
+    address_id: int
 
 
 class OrderSchemaEdit(BaseModel):

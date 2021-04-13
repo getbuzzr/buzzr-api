@@ -33,3 +33,5 @@ class Address(Base):
         Enum(DeliveryPreferenceEnum))
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     last_login = Column(DateTime, default=datetime.datetime.utcnow)
+    orders = relationship(
+        'Order', backref=backref('address'))
