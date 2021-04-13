@@ -5,3 +5,4 @@ from . import products
 from . import orders
 from . import favorites
 from . import addresses
+from . import admin

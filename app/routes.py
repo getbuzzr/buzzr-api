@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from routers import users, departments, favorites, addresses, products, categories, orders
+from routers import users, departments, favorites, addresses, products, categories, orders, admin, addresses
 
 api_router = APIRouter()
 api_router.include_router(users.router, prefix="/users", tags=["users"])
@@ -14,6 +14,10 @@ api_router.include_router(
     products.router, prefix="/products", tags=["products"])
 api_router.include_router(
     orders.router, prefix="/orders", tags=["orders"])
+api_router.include_router(
+    admin.router, prefix="/admin", tags=["admin"])
+api_router.include_router(
+    addresses.router, prefix="/addresses", tags=["addresses"])
 
 
 @api_router.get("/")

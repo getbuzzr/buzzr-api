@@ -8,6 +8,17 @@ from schemas.ProductOrderSchema import ProductOrderSchemaOut, ProductOrderSchema
 
 class OrderSchemaIn(BaseModel):
     products_ordered: conlist(ProductOrderSchemaIn, min_items=1)
+    address_id: int
+
+
+class OrderSchemaEdit(BaseModel):
+    products_ordered: conlist(ProductOrderSchemaIn, min_items=1)
+
+
+class AdminOrderSchemaEdit(BaseModel):
+    products_ordered: Optional[conlist(ProductOrderSchemaIn, min_items=1)]
+    cost: Optional[float]
+    status: Optional[OrderStatusEnum]
 
 
 class OrderSchemaCreateOut(BaseModel):

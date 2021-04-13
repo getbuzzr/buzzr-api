@@ -3,7 +3,10 @@ import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
 # Models
-from models.Department import Department
+from models.Address import Address
+from models.User import User
+# Schemas
+from schemas.AddressSchema import AddressSchemaIn, AddressSchemaOut, AddressSchemaPut
 # Auth
 from auth import get_current_user
 from utils import serialize
@@ -11,3 +14,90 @@ from utils import serialize
 from database import get_db
 
 router = APIRouter()
+
+# check if address already exists
+
+
+def check_address_exists(address, list_of_created_addresses):
+    """Check to see if the address already exists
+
+    Args:
+        address ([Address]):The address to check
+        list_of_created_addresses (List[Address]): List of adddress to check for
+
+    Returns:
+        [Boolean] 
+    """
+    for address_created in list_of_created_addresses:
+        # check street address and apartment number
+        if address.street_address == address_created.street_address and address.apartment_number == address_created.apartment_number:
+            return True
+    return False
+
+
+@router.get('', response_model=List[AddressSchemaOut])
+def get_addresses(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    addresses = session.query(Address).filter_by(
+        user_id=current_user.id).order_by(Address.date_created.desc()).all()
+    return [serialize(x) for x in addresses]
+
+
+@router.post('', response_model=AddressSchemaOut)
+def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    # check to see if the name already exists
+    user_addresses = session.query(Address).filter_by(
+        user_id=current_user.id).all()
+    # create new address
+    new_address = Address(name=post_address.name, user_id=current_user.id, street_address=post_address.street_address, apartment_number=post_address.apartment_number, buzzer=post_address.buzzer, postal_code=post_address.postal_code,
+                          province=post_address.province, country=post_address.country, additional_instructions=post_address.additional_instructions, delivery_preference=post_address.delivery_preference)
+    if post_address.name in [x.name for x in user_addresses]:
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            "This name is already taken")
+    # check to see if the address already exists
+    if check_address_exists(new_address, user_addresses):
+        raise HTTPException(status.HTTP_409_CONFLICT,
+                            "This address already exists")
+
+    # check to see if default address already exists
+    try:
+        default_address = [x for x in user_addresses if x.is_default][0]
+    except:
+        default_address = None
+    # check to see if we can set user as default
+    if post_address.is_default:
+        # address that is default already exists so remove existing default
+        if default_address:
+            default_address.is_default = False
+            session.add(default_address)
+        new_address.is_default = True
+    else:
+        if default_address is None:
+            new_address.is_default = True
+    session.add(new_address)
+    session.commit()
+    return serialize(new_address)
+
+
+@router.put("/{address_id}", response_model=AddressSchemaOut)
+def put_orders(address_put: AddressSchemaPut, address_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    address_to_edit = session.query(Address).get(address_id)
+    if address_to_edit is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            "Address doesnt exist ")
+    if address_to_edit.user_id != current_user.id and not current_user.is_admin():
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            "You cant edit this address")
+    # address is being set as default
+    if address_put.is_default:
+        # if there is already an address that is set as default, we need to remove it
+        current_default_address = session.query(Address).filter_by(
+            user_id=current_user.id, is_default=True).first()
+        if current_default_address:
+            current_default_address.is_default = False
+            session.add(current_default_address)
+    for key, value in address_put.dict().items():
+        # If key is being edited
+        if value:
+            setattr(address_to_edit, key, value)
+    session.commit()
+    return serialize(address_to_edit)

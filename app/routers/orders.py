@@ -8,7 +8,7 @@ from models.User import User
 from models.Product import Product
 from models.ProductOrdered import ProductOrdered
 from models.StripeApiClient import StripeApiClient
-
+from models.SlackWebhookClient import SlackWebhookClient
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut
 # Auth
@@ -78,7 +78,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     payment_intent = StripeApiClient('cad').generate_payment_intent(
         current_user.stripe_id, total_cost)
     # create new order
-    new_order = Order(user_id=current_user.id, cost=total_cost,
+    new_order = Order(user_id=current_user.id, cost=total_cost, address_id=order.address_id,
                       status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id)
     session.add(new_order)
     session.commit()
@@ -89,4 +89,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             order_id=new_order.id, product_id=ordered_product.product_id, quantity=ordered_product.quantity))
     session.bulk_save_objects(products_ordered_create)
     session.commit()
+    # post order to slack webhook
+    SlackWebhookClient().post_delivery(new_order.id, current_user.id, new_order.address,
+                                       f"{current_user.first_name} {current_user.last_name}", new_order.products_ordered)
     return serialize(new_order)

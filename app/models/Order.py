@@ -42,3 +42,4 @@ class Order(Base):
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     status = Column(Enum(OrderStatusEnum), server_default="checking_out")
     stripe_payment_intent = Column(String(30))
+    address_id = Column(Integer, ForeignKey('address.id'))

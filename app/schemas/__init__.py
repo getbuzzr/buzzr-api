@@ -5,3 +5,4 @@ from . import CategorySchema
 from . import ProductSchema
 from . import OrderSchema
 from . import ProductOrderSchema
+from . import AddressSchema
