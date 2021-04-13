@@ -77,6 +77,31 @@ def get_parameter_from_ssm(path):
         return None
 
 
+def send_push_sns(device_id, device_type, body):
+    client = boto3.client('sns')
+    if device_type == "ios":
+        platform_application_arn = os.environ['IOS_SNS_PLATFORM_APPLICATION_ARN']
+    elif device_type == "android":
+        platform_application_arn = os.environ['ANDROID_SNS_PLATFORM_APPLICATION_ARN']
+    else:
+        raise Exception("device type must be android or ios")
+    try:
+        endpoint_response = client.create_platform_endpoint(
+            PlatformApplicationArn=platform_application_arn,
+            Token=device_id,
+        )
+        endpoint_arn = endpoint_response['EndpointArn']
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR, "Couldnt create endpoint response")
+
+    publish_result = client.publish(
+        TargetArn=endpoint_arn,
+        Message=body,
+    )
+
+
 def serialize(model):
     """Used to serialize models. Changes datetime to ISO-8601 format
 

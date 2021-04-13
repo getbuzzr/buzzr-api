@@ -10,6 +10,16 @@ class OrderSchemaIn(BaseModel):
     products_ordered: conlist(ProductOrderSchemaIn, min_items=1)
 
 
+class OrderSchemaEdit(BaseModel):
+    products_ordered: conlist(ProductOrderSchemaIn, min_items=1)
+
+
+class AdminOrderSchemaEdit(BaseModel):
+    products_ordered: Optional[conlist(ProductOrderSchemaIn, min_items=1)]
+    cost: Optional[float]
+    status: Optional[OrderStatusEnum]
+
+
 class OrderSchemaCreateOut(BaseModel):
     """This schema is used to validate User api endpoint
     """
