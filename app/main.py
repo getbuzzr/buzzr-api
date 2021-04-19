@@ -6,6 +6,8 @@ from sqlalchemy.orm import sessionmaker
 from utils import get_parameter_from_ssm
 from routes import api_router
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 app = FastAPI()
 origins = [
     "*"

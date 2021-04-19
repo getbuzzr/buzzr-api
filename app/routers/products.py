@@ -2,9 +2,12 @@ from fastapi import APIRouter, HTTPException, Depends, status
 import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import and_
 # Models
-from models.Product import Product
+from models.Product import Product, product_tags
 from models.User import User
+# schemas
+from schemas.ProductSchema import ProductSchemaOut
 # Auth
 from auth import get_current_user
 from utils import serialize
@@ -42,3 +45,16 @@ def delete_favorites(product_id: int, current_user: User = Depends(get_current_u
                             "This product is not favorited")
     session.commit()
     return status.HTTP_200_OK
+
+
+@router.get('/{product_id}/related', response_model=List[ProductSchemaOut])
+def get_related(product_id: int, session: Session = Depends(get_db)):
+    product = session.query(Product).get(product_id)
+    if product is None:
+        raise HTTPException(
+            status.HTTP_400_CONFLICT, "Product doesnt exist")
+    tag_ids = [x.id for x in product.tags]
+    # get all products with same tags but not same product id
+    related_items = session.query(Product).join(product_tags).filter(and_(
+        product_tags.c.tag_id.in_(tag_ids), product_tags.c.product_id != product_id)).all()
+    return [serialize(x) for x in related_items]
