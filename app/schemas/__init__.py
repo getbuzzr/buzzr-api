@@ -6,3 +6,4 @@ from . import ProductSchema
 from . import OrderSchema
 from . import ProductOrderSchema
 from . import AddressSchema
+from . import SearchSchema

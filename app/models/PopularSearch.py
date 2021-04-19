@@ -5,10 +5,10 @@ import datetime
 from sqlalchemy.orm import relationship, backref
 
 
-class PopularSearches(Base):
+class PopularSearch(Base):
     """Base Department """
 
-    __tablename__ = "popular_searches"
+    __tablename__ = "popular_search"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(100))
+    query = Column(String(100))

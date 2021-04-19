@@ -7,8 +7,10 @@ from sqlalchemy import and_
 from models.Product import Product, product_tags
 from models.User import User
 from models.ProductTag import ProductTag
+from models.PopularSearch import PopularSearch
 # schemas
 from schemas.ProductSchema import ProductSchemaOut
+from schemas.SearchSchema import SearchSchemaOut
 # Auth
 from auth import get_current_user
 from utils import serialize
@@ -36,3 +38,9 @@ def search(q: str = "", session: Session = Depends(get_db)):
         product_tags.c.tag_id.in_(tag_ids)).all()
     searched_items = products + products_with_tags
     return [serialize(x) for x in searched_items]
+
+
+@router.get('/popular', response_model=List[SearchSchemaOut])
+def search_popular(q: str = "", session: Session = Depends(get_db)):
+    searches = session.query(PopularSearch).all()
+    return [serialize(x) for x in searches]
