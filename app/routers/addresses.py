@@ -12,10 +12,34 @@ from auth import get_current_user
 from utils import serialize
 # utils
 from database import get_db
-
+import requests
+import os
 router = APIRouter()
 
-# check if address already exists
+
+def is_address_valid(new_address):
+    """Checks with google maps to see if this address is valid
+
+    Args:
+        new_address ([Address]): Address to check
+    """
+    COMPANY_ADDRESS_LATITUDE = 49.276567
+    COMPANY_ADDRESS_LONGITUDE = -123.119116
+    GOOGLE_MAPS_API_KEY = os.environ['GOOGLE_MAPS_API_KEY']
+    MAX_TIME_SECONDS = 420
+    try:
+        time_seconds = requests.get(f'https://maps.googleapis.com/maps/api/directions/json?origin={COMPANY_ADDRESS_LATITUDE},{COMPANY_ADDRESS_LONGITUDE}&destination={new_address.latitude},{new_address.longitude}&key={GOOGLE_MAPS_API_KEY}&mode=bicycling').json()[
+            'routes'][0]['legs'][0]['duration']['value']
+    except Exception as e:
+        logging.error("Google server error")
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+    if time_seconds < MAX_TIME_SECONDS:
+        return True
+    return False
+
+
+def calculate_address_delivery_fee(address_id):
+    return 3.99
 
 
 def check_address_exists(address, list_of_created_addresses):
@@ -35,6 +59,11 @@ def check_address_exists(address, list_of_created_addresses):
     return False
 
 
+@router.get('/{address_id}/delivery_charge')
+def get_addresses_delivery_fee(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    return calculate_address_delivery_fee(address_id)
+
+
 @router.get('', response_model=List[AddressSchemaOut])
 def get_addresses(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     addresses = session.query(Address).filter_by(
@@ -49,7 +78,7 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
         user_id=current_user.id).all()
     # create new address
     new_address = Address(name=post_address.name, user_id=current_user.id, street_address=post_address.street_address, apartment_number=post_address.apartment_number, buzzer=post_address.buzzer, postal_code=post_address.postal_code,
-                          province=post_address.province, city=post_address.city, country=post_address.country, additional_instructions=post_address.additional_instructions, delivery_preference=post_address.delivery_preference)
+                          province=post_address.province, city=post_address.city, country=post_address.country, additional_instructions=post_address.additional_instructions, delivery_preference=post_address.delivery_preference, latitude=post_address.latitude, longitude=post_address.longitude)
     if post_address.name in [x.name for x in user_addresses]:
         raise HTTPException(status.HTTP_409_CONFLICT,
                             "This name is already taken")
@@ -57,7 +86,9 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
     if check_address_exists(new_address, user_addresses):
         raise HTTPException(status.HTTP_409_CONFLICT,
                             "This address already exists")
-
+    if not is_address_valid(new_address):
+        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
+                            "Address non existant/too far away")
     # check to see if default address already exists
     try:
         default_address = [x for x in user_addresses if x.is_default][0]
@@ -80,6 +111,10 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
 
 @router.put("/{address_id}", response_model=AddressSchemaOut)
 def put_orders(address_put: AddressSchemaPut, address_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    # if you change location, you must add lat/lng
+    if (address_put.street_address or address_put.city or address_put.country) and not (address_put.latitude and address_put.longitude):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            "if you change the location, you must add lat/lng")
     address_to_edit = session.query(Address).get(address_id)
     if address_to_edit is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
@@ -99,5 +134,8 @@ def put_orders(address_put: AddressSchemaPut, address_id: int, current_user: Use
         # If key is being edited
         if value:
             setattr(address_to_edit, key, value)
+    if not is_address_valid(address_to_edit):
+        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
+                            "Address non existant/too far away")
     session.commit()
     return serialize(address_to_edit)
