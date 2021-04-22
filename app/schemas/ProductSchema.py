@@ -8,11 +8,6 @@ class ProductTags(BaseModel):
     name: str
 
 
-class ProductPictures(BaseModel):
-    id: int
-    image_url: str
-
-
 class ProductSchemaOut(BaseModel):
     """This schema is used to validate User api endpoint
     """
@@ -23,7 +18,7 @@ class ProductSchemaOut(BaseModel):
     department_id: int
     weight: int
     cost: float
-    tags: Optional[List[ProductTags]]
-    pictures: Optional[List[ProductPictures]]
+    image_url: Optional[str]
     id: int
     percent_discount: int
+    quantity_in_order: int

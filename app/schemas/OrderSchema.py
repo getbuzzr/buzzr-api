@@ -47,3 +47,8 @@ class OrderSchemaOut(BaseModel):
     date_delivered:  Optional[datetime]
     status: OrderStatusEnum
     id: int
+    date_prepared:  Optional[datetime]
+    date_out_for_delivery:  Optional[datetime]
+    date_complete:  Optional[datetime]
+    date_failed:  Optional[datetime]
+    tip_amount:  Optional[float]

@@ -4,7 +4,7 @@ import logging
 import datetime
 from sqlalchemy.orm import relationship, backref
 import enum
-
+from utils import serialize
 product_tags = Table('product_tags', Base.metadata,
                      Column(
                          'product_id', Integer, ForeignKey('product.id')),
@@ -29,10 +29,16 @@ class Product(Base):
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     weight = Column(Integer)
     cost = Column(Float)
+    tax = Column(Float, default=0)
     percent_discount = Column(Integer, default=0)
+    image_url = Column(String(300))
+    quantity_per_order = Column(Integer)
     tags = relationship(
         'ProductTag', secondary=product_tags, backref=backref('product'))
-    pictures = relationship(
-        'ProductImage', backref=backref('product'), lazy="select")
     product_ordered = relationship(
         "ProductOrdered", backref=backref('product', lazy="select"))
+
+    def serialize_product(self):
+        product = serialize(self)
+        product['tags'] = [serialize(x) for x in self.tags]
+        return product

@@ -32,12 +32,7 @@ def get_department_categories(department_id: int, session: Session = Depends(get
 
 @router.get('/{department_id}/products', response_model=List[ProductSchemaOut])
 def get_department_products(department_id: int,  session: Session = Depends(get_db)):
-    return_product = []
     # serialize pictures/tags as they are one to many
-    for product in session.query(Product).filter_by(department_id=department_id).all():
-        serialized_product = serialize(product)
-        serialized_product['pictures'] = [
-            serialize(x) for x in product.pictures]
-        serialized_product['tags'] = [serialize(x) for x in product.tags]
-        return_product.append(serialized_product)
-    return return_product
+    department_products = session.query(Product).filter_by(
+        department_id=department_id).all()
+    return [serialize(x) for x in department_products]
