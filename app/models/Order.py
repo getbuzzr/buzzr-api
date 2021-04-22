@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table, Enum, Float
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table, Enum, Float, Boolean
 from database import Base
 import logging
 import datetime
@@ -19,6 +19,7 @@ class OrderStatusEnum(enum.Enum):
     checking_out = "checking_out"
     paid = "paid"
     preparing = "preparing"
+    out_for_delivery = "out_for_delivery"
     delivered = "delivered"
     arrived = "arrived"
     complete = "complete"
@@ -43,3 +44,7 @@ class Order(Base):
     status = Column(Enum(OrderStatusEnum), server_default="checking_out")
     stripe_payment_intent = Column(String(30))
     address_id = Column(Integer, ForeignKey('address.id'))
+    latitude = Column(Float)
+    longitude = Column(Float)
+    additional_instruction = Column(String(200))
+    refund_requested = Column(Boolean, default=False)

@@ -50,6 +50,10 @@ def get_orders(current_user: User = Depends(get_current_user), session: Session 
 
 @router.post('', response_model=OrderSchemaCreateOut)
 def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    # make sure order has one of address/lat/lng
+    if order.address_id is None and order.latitude is None and (order.longitude is None or order.latitude is None):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            "Must have address or lat long ")
     # check if user already has order
     if session.query(Order).filter_by(status=OrderStatusEnum.checking_out, user_id=current_user.id).first():
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
@@ -69,6 +73,9 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
                 (100 - product_ordered.percent_discount) * 0.01
         total_cost += quantity * cost
         product_ordered.stock -= quantity
+        if product_ordered.stock < 0:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                f"We dont have enough stock of {product_ordered.name}")
 
     # no cost calculated
     total_cost = round(total_cost, 2)
@@ -78,8 +85,14 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     payment_intent = StripeApiClient('cad').generate_payment_intent(
         current_user.stripe_id, total_cost)
     # create new order
-    new_order = Order(user_id=current_user.id, cost=total_cost, address_id=order.address_id,
-                      status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id)
+    # if order is associated with the address
+    if order.address_id:
+        new_order = Order(user_id=current_user.id, cost=total_cost, address_id=order.address_id,
+                          satus=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id)
+    # if order is reliant on lat/lng
+    else:
+        new_order = Order(user_id=current_user.id, cost=total_cost, latitude=order.latitude, longitude=order.longitude,
+                          satus=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id)
     session.add(new_order)
     session.commit()
     # create product orders
