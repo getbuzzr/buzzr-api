@@ -7,7 +7,7 @@ from sqlalchemy import and_
 from models.Product import Product, product_tags
 from models.User import User
 # schemas
-from schemas.ProductSchema import ProductSchemaOut
+from schemas.ProductSchema import ProductSchemaOut, ProductTags
 # Auth
 from auth import get_current_user
 from utils import serialize
@@ -15,6 +15,15 @@ from utils import serialize
 from database import get_db
 
 router = APIRouter()
+
+
+@router.get('/{product_id}/tags', response_model=List[ProductTags])
+def get_tags(product_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    product = session.query(Product).get(product_id)
+    if product is None:
+        raise HTTPException(
+            status.HTTP_400_CONFLICT, "Product doesnt exist")
+    return [serialize(x) for x in product.tags]
 
 
 @router.post('/{product_id}/favorite')

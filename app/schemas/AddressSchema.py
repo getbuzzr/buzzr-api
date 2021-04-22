@@ -15,6 +15,7 @@ class AddressSchemaIn(BaseModel):
     postal_code: constr(min_length=6)
     province: constr(min_length=2)
     country: constr(min_length=2)
+    city: constr(min_length=2)
     is_default: bool
     additional_instructions: Optional[str]
     delivery_preference: DeliveryPreferenceEnum

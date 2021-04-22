@@ -18,4 +18,5 @@ router = APIRouter()
 
 @router.get('', response_model=List[ProductSchemaOut])
 def get_favorites(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    # get all product tags
     return [serialize(x) for x in current_user.favorite_products]

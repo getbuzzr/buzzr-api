@@ -43,6 +43,8 @@ class User(Base):
         'Product', secondary=favorite_products, backref=backref('favorited_by'))
     addresses = relationship(
         'Address', backref=backref('user'))
+    orders = relationship(
+        'Order', backref=backref('user'))
 
     def is_admin(self):
         """Check to see if user is super admin

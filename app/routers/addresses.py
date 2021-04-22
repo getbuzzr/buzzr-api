@@ -49,7 +49,7 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
         user_id=current_user.id).all()
     # create new address
     new_address = Address(name=post_address.name, user_id=current_user.id, street_address=post_address.street_address, apartment_number=post_address.apartment_number, buzzer=post_address.buzzer, postal_code=post_address.postal_code,
-                          province=post_address.province, country=post_address.country, additional_instructions=post_address.additional_instructions, delivery_preference=post_address.delivery_preference)
+                          province=post_address.province, city=post_address.city, country=post_address.country, additional_instructions=post_address.additional_instructions, delivery_preference=post_address.delivery_preference)
     if post_address.name in [x.name for x in user_addresses]:
         raise HTTPException(status.HTTP_409_CONFLICT,
                             "This name is already taken")

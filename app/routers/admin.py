@@ -61,6 +61,7 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
     if order is None:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, "No payment found")
+    datetime_now = datetime.datetime.utcnow
     order.status = OrderStatusEnum.paid
     user = session.query(User).get(order.user_id)
     if user.apn_token:
@@ -69,8 +70,13 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
     if user.fcm_token:
         send_push_sns(user.fcm_token, "android",
                       "Your Order has been successfully paid for. Our team will begin preparing your order shortly")
+    # set date order paid
+    order.date_paid = datetime_now
     session.commit()
-    return status.HTTP_200_OK
+    # post order to slack webhook
+    SlackWebhookClient().post_delivery(order.id, order.user.id, order.address,
+                                       f"{current_user.first_name} {current_user.last_name}", order.products_ordered)
+    return status.HTTP_200_OKe
 
 
 @router.put('/orders/{order_id}/status')
@@ -86,12 +92,13 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
                             f"order: {order_id} doesnt exist")
     # iterate through all the attributes of the usereditschema
     messages = {'preparing': "Your order is currently being prepared by our team",
-                 "out_for_delivery": "Your order is currently out for delivery. We will be there soon!",
-                 "delivered": "Your delivery driver has arrived!"}
+                "out_for_delivery": "Your order is currently out for delivery. We will be there soon!",
+                "delivered": "Your delivery driver has arrived!"}
     try:
         message = messages[order.status.value]
     except:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "not supported update")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            "not supported update")
     targeted_user = session.query(User).get(edited_order.user_id)
     if targeted_user.apn_token:
         send_push_sns(targeted_user.apn_token, "ios", message)

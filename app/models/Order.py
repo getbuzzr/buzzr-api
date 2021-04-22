@@ -39,6 +39,12 @@ class Order(Base):
     cost = Column(Float)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_delivered = Column(DateTime)
+    date_prepared = Column(DateTime)
+    date_out_for_delivery = Column(DateTime)
+    date_complete = Column(DateTime)
+    date_failed = Column(DateTime)
+    date_paid = Column(DateTime)
+    tip_amount = Column(Float, default=0)
     last_updated = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     status = Column(Enum(OrderStatusEnum), server_default="checking_out")
