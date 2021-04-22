@@ -85,10 +85,13 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             f"order: {order_id} doesnt exist")
     # iterate through all the attributes of the usereditschema
-    messsages = {'preparing': "Your order is currently being prepared by our team",
+    messages = {'preparing': "Your order is currently being prepared by our team",
                  "out_for_delivery": "Your order is currently out for delivery. We will be there soon!",
                  "delivered": "Your delivery driver has arrived!"}
-    message = messsages[order.status.value]
+    try:
+        message = messages[order.status.value]
+    except:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "not supported update")
     targeted_user = session.query(User).get(edited_order.user_id)
     if targeted_user.apn_token:
         send_push_sns(targeted_user.apn_token, "ios", message)
