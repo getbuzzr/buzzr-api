@@ -18,6 +18,8 @@ class AddressSchemaIn(BaseModel):
     is_default: bool
     additional_instructions: Optional[str]
     delivery_preference: DeliveryPreferenceEnum
+    latitude: float
+    longitude: float
 
 
 class AddressSchemaPut(BaseModel):
@@ -33,6 +35,8 @@ class AddressSchemaPut(BaseModel):
     is_default: bool
     additional_instructions: Optional[str]
     delivery_preference: DeliveryPreferenceEnum
+    latitude: Optional[float]
+    longitude: Optional[float]
 
 
 class AddressSchemaOut(BaseModel):
@@ -49,3 +53,5 @@ class AddressSchemaOut(BaseModel):
     is_default: bool
     additional_instructions: Optional[str]
     delivery_preference: DeliveryPreferenceEnum
+    latitude: float
+    longitude: float

@@ -2,6 +2,9 @@ from fastapi import APIRouter, HTTPException, Depends, status, Request, Form
 import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
+import stripe
+import os
+import json
 # Models
 from models.Order import Order, OrderStatusEnum
 from models.User import User
@@ -9,7 +12,7 @@ from models.Product import Product
 from models.ProductOrdered import ProductOrdered
 
 # Schemas
-from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, AdminOrderSchemaEdit
+from schemas.OrderSchema import AdminOrderStatusSchemaEdit, OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, AdminOrderSchemaEdit
 # Auth
 from auth import get_current_user, is_admin
 from utils import serialize, send_push_sns
@@ -37,27 +40,58 @@ def get_orders(status: str = None, current_user: User = Depends(get_current_user
     return orders_to_return
 
 
-@router.put('/orders/{order_id}', response_model=OrderSchemaOut)
-def put_orders(order: AdminOrderSchemaEdit, order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+@router.post('/orders/stripe_charge')
+async def put_stripe_order(request: Request, session: Session = Depends(get_db)):
+    endpoint_secret = os.environ['STRIPE_WEBHOOK_TOKEN']
+    payload = await request.body()
+    sig_header = request.headers['stripe-signature']
+    try:
+        event = stripe.Webhook.construct_event(
+            payload=payload, sig_header=sig_header, secret=endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        raise HTTPException(status.HTTP_400_BAD_REQUEST)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HTTPException(status.HTTP_403_FORBIDDEN)
+    payment_intent = json.loads(payload)['data']['object']['payment_intent']
+    order = session.query(Order).filter_by(
+        stripe_payment_intent=payment_intent).first()
+    if order is None:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "No payment found")
+    order.status = OrderStatusEnum.paid
+    user = session.query(User).get(order.user_id)
+    if user.apn_token:
+        send_push_sns(user.apn_token, "ios",
+                      "Your Order has been successfully paid for. Our team will begin preparing your order shortly")
+    if user.fcm_token:
+        send_push_sns(user.fcm_token, "android",
+                      "Your Order has been successfully paid for. Our team will begin preparing your order shortly")
+    session.commit()
+    return status.HTTP_200_OK
+
+
+@router.put('/orders/{order_id}/status')
+def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit, order_id: int, session: Session = Depends(get_db)):
+    # allows retool to make post
+    retool_auth_key = os.environ['RETOOL_AUTH_KEY']
+    retool_key = request.header['retool-auth-key']
+    if retool_auth_key != retool_key:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
     edited_order = session.query(Order).get(order_id)
     if edited_order is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            f"User: {order_id} doesnt exist")
+                            f"order: {order_id} doesnt exist")
     # iterate through all the attributes of the usereditschema
-    for key, value in order.dict().items():
-        # If key is being edited
-        if value:
-            setattr(edited_order, key, value)
-    # if status is updated, send a push
-    if 'status' in order.dict().keys():
-        targeted_user = session.query(User).get(edited_order.user_id)
-        if targeted_user.apn_token:
-            send_push_sns(targeted_user.apn_token, "ios", "hello Brandon")
-        if targeted_user.fcm_token:
-            send_push_sns(targeted_user.fcm_token, "android", "hello Brandon")
-    # push edits
-    session.commit()
-    return_edit_order = serialize(edited_order)
-    return_edit_order['products_ordered'] = [
-        serialize(x) for x in order.products_ordered]
-    return return_edit_order
+    messsages = {'preparing': "Your order is currently being prepared by our team",
+                 "out_for_delivery": "Your order is currently out for delivery. We will be there soon!",
+                 "delivered": "Your delivery driver has arrived!"}
+    message = messsages[order['status']]
+    targeted_user = session.query(User).get(edited_order.user_id)
+    if targeted_user.apn_token:
+        send_push_sns(targeted_user.apn_token, "ios", message)
+    if targeted_user.fcm_token:
+        send_push_sns(targeted_user.fcm_token, "android", message)
+    return status.HTTP_200_OK
