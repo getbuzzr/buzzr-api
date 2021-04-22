@@ -77,7 +77,7 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
 def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit, order_id: int, session: Session = Depends(get_db)):
     # allows retool to make post
     retool_auth_key = os.environ['RETOOL_AUTH_KEY']
-    retool_key = request.header['retool-auth-key']
+    retool_key = request.headers['retool-auth-key']
     if retool_auth_key != retool_key:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
     edited_order = session.query(Order).get(order_id)
@@ -88,7 +88,7 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
     messsages = {'preparing': "Your order is currently being prepared by our team",
                  "out_for_delivery": "Your order is currently out for delivery. We will be there soon!",
                  "delivered": "Your delivery driver has arrived!"}
-    message = messsages[order['status']]
+    message = messsages[order.status.value]
     targeted_user = session.query(User).get(edited_order.user_id)
     if targeted_user.apn_token:
         send_push_sns(targeted_user.apn_token, "ios", message)
