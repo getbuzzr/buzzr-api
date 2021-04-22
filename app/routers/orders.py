@@ -9,6 +9,9 @@ from models.Product import Product
 from models.ProductOrdered import ProductOrdered
 from models.StripeApiClient import StripeApiClient
 from models.SlackWebhookClient import SlackWebhookClient
+
+from routers.addresses import calculate_address_delivery_fee
+
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut
 # Auth
@@ -76,7 +79,9 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         if product_ordered.stock < 0:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 f"We dont have enough stock of {product_ordered.name}")
-
+    # add delivery fee
+    delivery_fee = calculate_address_delivery_fee(order.address_id)
+    total_cost += delivery_fee
     # no cost calculated
     total_cost = round(total_cost, 2)
     if total_cost == 0:
