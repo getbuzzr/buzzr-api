@@ -112,7 +112,7 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
 @router.put("/{address_id}", response_model=AddressSchemaOut)
 def put_orders(address_put: AddressSchemaPut, address_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     # if you change location, you must add lat/lng
-    if (address_put.street_address or address_put.city or address_put.country) and not (address_put.latitude and address_put.longitude):
+    if (address_put.street_address or address_put.city or address_put.country) is not None and None in (address_put.latitude, address_put.longitude):
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             "if you change the location, you must add lat/lng")
     address_to_edit = session.query(Address).get(address_id)
