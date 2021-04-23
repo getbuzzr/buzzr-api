@@ -11,3 +11,4 @@ from . import ProductImage
 from . import Order
 from . import SlackWebhookClient
 from . import PopularSearch
+from . import ProductSuggestions

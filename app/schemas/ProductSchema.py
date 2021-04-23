@@ -21,4 +21,5 @@ class ProductSchemaOut(BaseModel):
     image_url: Optional[str]
     id: int
     percent_discount: int
-    quantity_in_order: int
+    quantity_per_order: int
+    tax: float

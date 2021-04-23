@@ -33,6 +33,7 @@ class AddressSchemaPut(BaseModel):
     postal_code: Optional[constr(min_length=6)]
     province: Optional[constr(min_length=2)]
     country: Optional[constr(min_length=2)]
+    city: Optional[constr(min_length=2)]
     is_default: bool
     additional_instructions: Optional[str]
     delivery_preference: DeliveryPreferenceEnum
