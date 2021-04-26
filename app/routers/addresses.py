@@ -30,12 +30,16 @@ def is_address_valid(new_address):
     try:
         google_maps_request = requests.get(
             f'https://maps.googleapis.com/maps/api/directions/json?origin={COMPANY_ADDRESS_LATITUDE},{COMPANY_ADDRESS_LONGITUDE}&destination={new_address.latitude},{new_address.longitude}&key={GOOGLE_MAPS_API_KEY}&mode=bicycling').json()
-        time_seconds = google_maps_request[
-            'routes'][0]['legs'][0]['duration']['value']
     except Exception as e:
         logging.error(
             f"Google server error: Request:{google_maps_request} Error: {e}")
-        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+    try:
+        time_seconds = google_maps_request[
+            'routes'][0]['legs'][0]['duration']['value']
+    except:
+        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
+                            "lat/lng not a valid location")
+
     if time_seconds < MAX_TIME_SECONDS:
         return True
     return False
@@ -139,6 +143,6 @@ def put_orders(address_put: AddressSchemaPut, address_id: int, current_user: Use
             setattr(address_to_edit, key, value)
     if not is_address_valid(address_to_edit):
         raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
-                            "Address non existant/too far away")
+                            "Address too far away")
     session.commit()
     return serialize(address_to_edit)
