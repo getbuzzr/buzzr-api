@@ -80,6 +80,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     # add delivery fee
     delivery_fee = calculate_address_delivery_fee(order.address_id)
     total_cost += delivery_fee
+    total_cost += order.tip_amount
     # no cost calculated
     total_cost = round(total_cost, 2)
     if total_cost == 0:
@@ -91,11 +92,11 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     # if order is associated with the address
     if order.address_id:
         new_order = Order(user_id=current_user.id, cost=total_cost, address_id=order.address_id,
-                          status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id)
+                          status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id, tip_amount=order.tip_amount)
     # if order is reliant on lat/lng
     else:
         new_order = Order(user_id=current_user.id, cost=total_cost, latitude=order.latitude, longitude=order.longitude,
-                          status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id)
+                          status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id, tip_amount=order.tip_amount)
     session.add(new_order)
     session.commit()
     # create product orders

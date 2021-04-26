@@ -11,6 +11,7 @@ class OrderSchemaIn(BaseModel):
     address_id: Optional[int]
     longitude: Optional[float]
     latitude: Optional[float]
+    tip_amount: float
 
 
 class OrderSchemaEdit(BaseModel):
