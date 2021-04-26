@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship, backref
 import enum
 
 
-class DeliveryPreferenceEnum(enum.Enum):
+class DeliveryPreferenceEnum(str, enum.Enum):
     leave_at_door = "leave_at_door"
     buzz_up = 'buzz_up'
     call_upon_arrival = 'call_upon_arrival'
@@ -26,7 +26,7 @@ class Address(Base):
     buzzer = Column(String(20))
     postal_code = Column(String(20))
     province = Column(String(20), nullable=False)
-    city = Column(String(50), nullable=False,default="Vancouver")
+    city = Column(String(50), nullable=False, default="Vancouver")
     country = Column(String(50), nullable=False)
     is_default = Column(Boolean)
     latitude = Column(Float, nullable=False, default=0)

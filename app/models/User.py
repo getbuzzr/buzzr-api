@@ -13,7 +13,7 @@ favorite_products = Table('favorite_products', Base.metadata,
                                  default=datetime.datetime.utcnow))
 
 
-class UserRoleEnum(enum.Enum):
+class UserRoleEnum(str, enum.Enum):
     admin = "admin"
     user = 'user'
 
