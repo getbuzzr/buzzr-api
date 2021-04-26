@@ -50,7 +50,7 @@ def get_orders(current_user: User = Depends(get_current_user), session: Session 
 
 
 @router.get('/{order_id}', response_model=OrderSchemaOut)
-def get_orders(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+def get_order_id(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     order = session.query(Order).filter_by(
         user_id=current_user.id, id=order_id).first()
     if order is None:
