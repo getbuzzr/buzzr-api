@@ -49,6 +49,7 @@ class Order(Base):
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     status = Column(Enum(OrderStatusEnum), server_default="checking_out")
     stripe_payment_intent = Column(String(30))
+    stripe_payment_intent_secret = Column(String(50))
     address_id = Column(Integer, ForeignKey('address.id'))
     latitude = Column(Float)
     longitude = Column(Float)

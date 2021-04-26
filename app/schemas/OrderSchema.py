@@ -34,6 +34,7 @@ class OrderSchemaCreateOut(BaseModel):
     date_created: datetime
     id: int
     stripe_payment_intent: str
+    stripe_payment_intent_secret: str
 
 
 class OrderSchemaOut(BaseModel):
