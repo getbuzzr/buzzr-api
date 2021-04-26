@@ -49,6 +49,19 @@ def get_orders(current_user: User = Depends(get_current_user), session: Session 
     return orders_to_return
 
 
+@router.get('/{order_id}', response_model=OrderSchemaOut)
+def get_order_id(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    order = session.query(Order).filter_by(
+        user_id=current_user.id, id=order_id).first()
+    if order is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            "order doesnt exist or you do not have access")
+    new_order = serialize(order)
+    new_order['products_ordered'] = [
+        serialize(x) for x in order.products_ordered]
+    return new_order
+
+
 @router.post('', response_model=OrderSchemaCreateOut)
 def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     # make sure order has one of address/lat/lng
