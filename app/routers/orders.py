@@ -35,9 +35,9 @@ def delete_orders(order_id: int, current_user: User = Depends(get_current_user),
     return status.HTTP_200_OK
 
 
-@ router.get('', response_model=List[OrderSchemaOut])
+@router.get('', response_model=List[OrderSchemaOut])
 def get_orders(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
-    order = session.query(Order).filter_by(
+    orders = session.query(Order).filter_by(
         user_id=current_user.id).order_by(Order.date_created.desc()).all()
     orders_to_return = []
     # serialize with products to order
@@ -49,7 +49,7 @@ def get_orders(current_user: User = Depends(get_current_user), session: Session 
     return orders_to_return
 
 
-@ router.post('', response_model=OrderSchemaCreateOut)
+@router.post('', response_model=OrderSchemaCreateOut)
 def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     # make sure order has one of address/lat/lng
     if order.address_id is None and order.latitude is None and (order.longitude is None or order.latitude is None):
