@@ -105,4 +105,4 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             order_id=new_order.id, product_id=ordered_product.product_id, quantity=ordered_product.quantity))
     session.bulk_save_objects(products_ordered_create)
     session.commit()
-    return serialize(new_order)
+    return {"id": new_order.id, "cost": new_order.cost, "stripe_payment_intent_secret": payment_intent.client_secret}
