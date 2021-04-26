@@ -28,10 +28,13 @@ def is_address_valid(new_address):
     GOOGLE_MAPS_API_KEY = os.environ['GOOGLE_MAPS_API_KEY']
     MAX_TIME_SECONDS = 420
     try:
-        time_seconds = requests.get(f'https://maps.googleapis.com/maps/api/directions/json?origin={COMPANY_ADDRESS_LATITUDE},{COMPANY_ADDRESS_LONGITUDE}&destination={new_address.latitude},{new_address.longitude}&key={GOOGLE_MAPS_API_KEY}&mode=bicycling').json()[
+        google_maps_request = requests.get(
+            f'https://maps.googleapis.com/maps/api/directions/json?origin={COMPANY_ADDRESS_LATITUDE},{COMPANY_ADDRESS_LONGITUDE}&destination={new_address.latitude},{new_address.longitude}&key={GOOGLE_MAPS_API_KEY}&mode=bicycling').json()
+        time_seconds = google_maps_request[
             'routes'][0]['legs'][0]['duration']['value']
     except Exception as e:
-        logging.error(f"Google server error {e}")
+        logging.error(
+            f"Google server error: Request:{google_maps_request} Error: {e}")
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
     if time_seconds < MAX_TIME_SECONDS:
         return True
