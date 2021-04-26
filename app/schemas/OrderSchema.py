@@ -31,9 +31,7 @@ class OrderSchemaCreateOut(BaseModel):
     """This schema is used to validate User api endpoint
     """
     cost: float
-    date_created: datetime
     id: int
-    stripe_payment_intent: str
     stripe_payment_intent_secret: str
 
 

@@ -91,11 +91,11 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     # if order is associated with the address
     if order.address_id:
         new_order = Order(user_id=current_user.id, cost=total_cost, address_id=order.address_id,
-                          status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id, stripe_payment_intent_secret=payment_intent.client_secret)
+                          status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id)
     # if order is reliant on lat/lng
     else:
         new_order = Order(user_id=current_user.id, cost=total_cost, latitude=order.latitude, longitude=order.longitude,
-                          status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id, stripe_payment_intent_secret=payment_intent.client_secret)
+                          status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id)
     session.add(new_order)
     session.commit()
     # create product orders
@@ -105,4 +105,4 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             order_id=new_order.id, product_id=ordered_product.product_id, quantity=ordered_product.quantity))
     session.bulk_save_objects(products_ordered_create)
     session.commit()
-    return serialize(new_order)
+    return {"id": new_order.id, "cost": new_order.cost, "stripe_payment_intent_secret": payment_intent.client_secret}
