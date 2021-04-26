@@ -10,12 +10,13 @@ from models.Order import Order, OrderStatusEnum
 from models.User import User
 from models.Product import Product
 from models.ProductOrdered import ProductOrdered
-
+from models.SlackWebhookClient import SlackWebhookClient
+import datetime
 # Schemas
 from schemas.OrderSchema import AdminOrderStatusSchemaEdit, OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, AdminOrderSchemaEdit
 # Auth
 from auth import get_current_user, is_admin
-from utils import serialize, send_push_sns
+from utils import serialize, send_push_sns, generate_apple_order_push_payload
 # utils
 from database import get_db
 router = APIRouter()
@@ -55,18 +56,18 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
     except stripe.error.SignatureVerificationError as e:
         # Invalid signature
         return HTTPException(status.HTTP_403_FORBIDDEN)
-    payment_intent = json.loads(payload)['data']['object']['payment_intent']
+    payment_intent = json.loads(payload)['data']['object']['id']
     order = session.query(Order).filter_by(
         stripe_payment_intent=payment_intent).first()
     if order is None:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST, "No payment found")
-    datetime_now = datetime.datetime.utcnow
+    datetime_now = datetime.datetime.utcnow()
     order.status = OrderStatusEnum.paid
     user = session.query(User).get(order.user_id)
     if user.apn_token:
         send_push_sns(user.apn_token, "ios",
-                      "Your Order has been successfully paid for. Our team will begin preparing your order shortly")
+                      generate_apple_order_push_payload("Thank you for your order", f"Your order #{order.id} has been processed", OrderStatusEnum.paid))
     if user.fcm_token:
         send_push_sns(user.fcm_token, "android",
                       "Your Order has been successfully paid for. Our team will begin preparing your order shortly")
@@ -75,7 +76,7 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
     session.commit()
     # post order to slack webhook
     SlackWebhookClient().post_delivery(order.id, order.user.id, order.address,
-                                       f"{current_user.first_name} {current_user.last_name}", order.products_ordered)
+                                       f"{order.user.first_name} {order.user.last_name}", order.products_ordered)
     return status.HTTP_200_OK
 
 

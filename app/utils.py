@@ -77,6 +77,26 @@ def get_parameter_from_ssm(path):
         return None
 
 
+def generate_apple_order_push_payload(title, body, order_status):
+    """[summary]
+
+    Args:
+        title ([str]): Title of the message
+        body (str): body of the message
+        order_status (OrderStatusEnum): status of the order
+    """
+    return json.dumps({
+        "aps": {
+            "alert": {
+                "title": title,
+                "body": body
+            }
+        },
+        "status": order_status.value,
+        "timestamp": datetime.utcnow().isoformat()+'Z'
+    })
+
+
 def send_push_sns(device_id, device_type, body):
     client = boto3.client('sns')
     if device_type == "ios":
