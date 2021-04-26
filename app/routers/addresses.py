@@ -60,7 +60,7 @@ def check_address_exists(address, list_of_created_addresses):
 
 
 @router.get('/{address_id}/delivery_charge')
-def get_addresses_delivery_fee(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+def get_addresses_delivery_fee(address_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     return calculate_address_delivery_fee(address_id)
 
 

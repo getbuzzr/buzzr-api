@@ -76,7 +76,7 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
     # post order to slack webhook
     SlackWebhookClient().post_delivery(order.id, order.user.id, order.address,
                                        f"{current_user.first_name} {current_user.last_name}", order.products_ordered)
-    return status.HTTP_200_OKe
+    return status.HTTP_200_OK
 
 
 @router.put('/orders/{order_id}/status')
