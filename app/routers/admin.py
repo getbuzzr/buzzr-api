@@ -92,9 +92,9 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             f"order: {order_id} doesnt exist")
     # iterate through all the attributes of the usereditschema
-    messages = {'preparing': "Your order is currently being prepared by our team",
-                "out_for_delivery": "Your order is currently out for delivery. We will be there soon!",
-                "delivered": "Your delivery driver has arrived!"}
+    messages = {'preparing': generate_apple_order_push_payload("Your order is being prepared", f"Your order #{order.id} is now being prepared by our team", OrderStatusEnum.preparing),
+                "out_for_delivery": generate_apple_order_push_payload("Your order is being delivered", f"Your order #{order.id} is now being delivered by a rider from our team. It will be there shortly", OrderStatusEnum.out_for_delivery),
+                "delivered": generate_apple_order_push_payload("Your order has arrived", f"Your order #{order.id} has arrived!", OrderStatusEnum.out_for_delivery)}
     try:
         message = messages[order.status.value]
     except:
