@@ -6,8 +6,17 @@ import logging
 from datetime import datetime
 import os
 from functools import wraps
-
+import phonenumbers
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+
+def validate_phone_number(phone_number):
+    try:
+        num = phonenumbers.parse(phone_number, None)
+    except phonenumbers.NumberParseException as e:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, 'Enter a valid phone number that starts with country code')
+    return phonenumbers.is_valid_number(num)
 
 
 def validate_id_querystring(func):

@@ -38,6 +38,8 @@ class User(Base):
     referral_id = Column(String(10))
     referrer_id = Column(Integer)
     stripe_id = Column(String(20))
+    phone_verification_code = Column(String(5))
+    is_phone_verified = Column(Boolean, default=False)
     role = Column(Enum(UserRoleEnum), nullable=False, server_default="user")
     favorite_products = relationship(
         'Product', secondary=favorite_products, backref=backref('favorited_by'))
