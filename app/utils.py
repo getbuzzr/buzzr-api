@@ -78,14 +78,14 @@ def get_parameter_from_ssm(path):
 
 
 def generate_apple_order_push_payload(title, body, order_status):
-    """[summary]
+    """Prepare push notification string
 
     Args:
         title ([str]): Title of the message
         body (str): body of the message
         order_status (OrderStatusEnum): status of the order
     """
-    return json.dumps({
+    message = json.dumps({
         "aps": {
             "alert": {
                 "title": title,
@@ -95,6 +95,12 @@ def generate_apple_order_push_payload(title, body, order_status):
         "status": order_status.value,
         "timestamp": datetime.utcnow().isoformat()+'Z'
     })
+    if os.environ['BUILD_ENV'] == "prod":
+        return json.dumps({"APNS": message,
+                           "default": 'Default required message'})
+    else:
+        return json.dumps({"APNS_SANDBOX": message,
+                           "default": 'Default required message'})
 
 
 def send_push_sns(device_id, device_type, body):
@@ -119,7 +125,9 @@ def send_push_sns(device_id, device_type, body):
     publish_result = client.publish(
         TargetArn=endpoint_arn,
         Message=body,
+        MessageStructure="json"
     )
+    logging.info(f"push sent {publish_result}")
 
 
 def serialize(model):
