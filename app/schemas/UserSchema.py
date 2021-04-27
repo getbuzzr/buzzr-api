@@ -30,9 +30,11 @@ class UserSchemaPut(BaseModel):
     additional_information: Optional[str]
 
 
+class UserPhoneNumberPut(BaseModel):
+    phone_number: str
+
+
 class UserSchemaOut(BaseModel):
-    """This schema is used to validate User api endpoint
-    """
     first_name: str
     last_name: str
     cognito_sub: Optional[str]
@@ -46,3 +48,5 @@ class UserSchemaOut(BaseModel):
     apn_token: Optional[str]
     fcm_token: Optional[str]
     referral_id: Optional[str]
+    phone_verification_code: Optional[str]
+    is_phone_verified: Optional[bool]
