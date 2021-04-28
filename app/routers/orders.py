@@ -115,7 +115,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         product_ordered.stock -= quantity
         if product_ordered.stock < 0:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                                f"We dont have enough stock of {product_ordered.name}")
+                                json.dumps({"reason": "out of stock", "product_id": product_ordered.id}))
     # add delivery fee
     delivery_fee = calculate_address_delivery_fee(order.address_id)
     total_cost += delivery_fee
