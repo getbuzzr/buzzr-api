@@ -18,6 +18,16 @@ class OrderSchemaEdit(BaseModel):
     products_ordered: conlist(ProductOrderSchemaIn, min_items=1)
 
 
+class OrderTipEditSchemaIn(BaseModel):
+    tip_amount: float
+
+
+class OrderTipEditSchemaOut(BaseModel):
+    payment_intent_secret:  str
+    cost: float
+    id: int
+
+
 class AdminOrderSchemaEdit(BaseModel):
     products_ordered: Optional[conlist(ProductOrderSchemaIn, min_items=1)]
     cost: Optional[float]

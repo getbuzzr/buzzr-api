@@ -40,3 +40,22 @@ class StripeApiClient():
             logging.error(e)
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
         return payment_intent
+
+    def edit_payment_intent(self, payment_intent_id, amount):
+        """This function is used to edit a payment intent
+
+        Args:
+            payment_intent_id (str) This is the id of the payment intent
+            amount (float): This is the new amount
+        @returns 
+            payment_intent_secret (str) New payment intent secret
+        """
+        try:
+            payment_intent = self.stripe.PaymentIntent.modify(
+                payment_intent_id,
+                amount=int(amount*100),
+            )
+        except Exception as e:
+            logging.error(e)
+            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return payment_intent.client_secret

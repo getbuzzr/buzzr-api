@@ -13,7 +13,7 @@ from models.SlackWebhookClient import SlackWebhookClient
 from routers.addresses import calculate_address_delivery_fee
 
 # Schemas
-from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut
+from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, OrderTipEditSchemaIn, OrderTipEditSchemaOut
 # Auth
 from auth import get_current_user
 from utils import serialize
@@ -60,6 +60,25 @@ def get_order_id(order_id: int, current_user: User = Depends(get_current_user), 
     new_order['products_ordered'] = [
         serialize(x) for x in order.products_ordered]
     return new_order
+
+
+@router.put('/{order_id}/tip_amount', response_model=OrderTipEditSchemaOut)
+def put_order_tip(new_order_tip: OrderTipEditSchemaIn, order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    order = session.query(Order).filter_by(
+        user_id=current_user.id, id=order_id, status=OrderStatusEnum.checking_out).first()
+    if order is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            "order doesnt exist or you do not have access")
+    old_tip = order.tip_amount
+    cost_change = new_order_tip.tip_amount - old_tip
+    new_cost = order.cost + cost_change
+    # generate new payment intent secret
+    payment_intent_secret = StripeApiClient('cad').edit_payment_intent(
+        order.stripe_payment_intent, new_cost)
+    order.cost = new_cost
+    order.tip_amount = new_order_tip.tip_amount
+    session.commit()
+    return {"id": order.id, "cost": order.cost, "payment_intent_secret": payment_intent_secret}
 
 
 @router.post('', response_model=OrderSchemaCreateOut)
