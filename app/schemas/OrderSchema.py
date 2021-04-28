@@ -23,7 +23,7 @@ class OrderTipEditSchemaIn(BaseModel):
 
 
 class OrderTipEditSchemaOut(BaseModel):
-    payment_intent_secret:  str
+    stripe_payment_intent_secret:  str
     cost: float
     id: int
 
