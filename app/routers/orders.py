@@ -30,6 +30,13 @@ def delete_orders(order_id: int, current_user: User = Depends(get_current_user),
     if order is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             "active order doesnt exist or doesnt belong to user")
+    # return stock to the product
+    products_ordered = session.query(Product).filter(
+        Product.id.in_([x.product_id for x in order.products_ordered])).all()
+    for product_ordered in products_ordered:
+        quantity = [
+            x.quantity for x in order.products_ordered if x.product_id == product_ordered.id][0]
+        product_ordered.stock += quantity
     session.delete(order)
     session.commit()
     return status.HTTP_200_OK
