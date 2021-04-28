@@ -85,7 +85,7 @@ def put_order_tip(new_order_tip: OrderTipEditSchemaIn, order_id: int, current_us
     order.cost = new_cost
     order.tip_amount = new_order_tip.tip_amount
     session.commit()
-    return {"id": order.id, "cost": order.cost, "payment_intent_secret": payment_intent_secret}
+    return {"id": order.id, "cost": order.cost, "stripe_payment_intent_secret": payment_intent_secret}
 
 
 @router.post('', response_model=OrderSchemaCreateOut)
