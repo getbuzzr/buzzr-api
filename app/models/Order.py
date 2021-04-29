@@ -21,8 +21,8 @@ class OrderStatusEnum(str, enum.Enum):
     preparing = "preparing"
     out_for_delivery = "out_for_delivery"
     delivered = "delivered"
-    arrived = "arrived"
     complete = "complete"
+    refunded = "refunded"
 
 
 class Order(Base):
@@ -54,3 +54,5 @@ class Order(Base):
     longitude = Column(Float)
     additional_instruction = Column(String(200))
     refund_requested = Column(Boolean, default=False)
+    delivery_charge = Column(Float)
+    tax_charge = Column(Float)
