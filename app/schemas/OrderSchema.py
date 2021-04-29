@@ -4,6 +4,7 @@ from datetime import datetime
 
 from models.Order import StarRatingEnum, OrderStatusEnum
 from schemas.ProductOrderSchema import ProductOrderSchemaOut, ProductOrderSchemaIn
+from schemas.AddressSchema import AddressSchemaOut
 
 
 class OrderSchemaIn(BaseModel):
@@ -44,6 +45,9 @@ class OrderSchemaCreateOut(BaseModel):
     cost: float
     id: int
     stripe_payment_intent_secret: str
+    tax_charge: float
+    delivery_fee: float
+    tip_amount: float
 
 
 class OrderSchemaOut(BaseModel):
@@ -62,3 +66,13 @@ class OrderSchemaOut(BaseModel):
     date_complete:  Optional[datetime]
     date_failed:  Optional[datetime]
     tip_amount:  Optional[float]
+    latitude: float
+    longitude: float
+    address: Optional[AddressSchemaOut]
+    tax_charge: float
+    delivery_fee: float
+
+
+class OrderFeedbackSchemaIn(BaseModel):
+    stars: StarRatingEnum
+    feedback: constr(max_length=200)
