@@ -46,7 +46,7 @@ class OrderSchemaCreateOut(BaseModel):
     id: int
     stripe_payment_intent_secret: str
     tax_charge: float
-    delivery_fee: float
+    delivery_charge: float
     tip_amount: float
 
 
@@ -66,11 +66,11 @@ class OrderSchemaOut(BaseModel):
     date_complete:  Optional[datetime]
     date_failed:  Optional[datetime]
     tip_amount:  Optional[float]
-    latitude: float
-    longitude: float
+    latitude: Optional[float]
+    longitude: Optional[float]
     address: Optional[AddressSchemaOut]
     tax_charge: float
-    delivery_fee: float
+    delivery_charge: float
 
 
 class OrderFeedbackSchemaIn(BaseModel):
