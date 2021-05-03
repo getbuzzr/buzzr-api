@@ -12,3 +12,4 @@ from . import Order
 from . import SlackWebhookClient
 from . import PopularSearch
 from . import ProductSuggestions
+from . import CustomErrorMessage

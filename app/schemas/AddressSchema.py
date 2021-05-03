@@ -52,6 +52,7 @@ class AddressSchemaOut(BaseModel):
     postal_code: str
     province: str
     country: str
+    city: str
     is_default: bool
     additional_instructions: Optional[str]
     delivery_preference: DeliveryPreferenceEnum

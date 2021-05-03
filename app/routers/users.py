@@ -29,7 +29,7 @@ def edit_user(user_put_body: UserSchemaPut, current_user: User = Depends(get_cur
     # iterate through all the attributes of the usereditschema
     for key, value in user_put_body.dict().items():
         # If key is being edited
-        if value:
+        if value is not None:
             setattr(current_user, key, value)
     # push edits
     session.commit()
