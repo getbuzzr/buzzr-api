@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 # Models
 from models.Address import Address
 from models.User import User
+from models.CustomErrorMessage import CustomErrorMessage, CustomErrorMessageEnum
 # Schemas
 from schemas.AddressSchema import AddressSchemaIn, AddressSchemaOut, AddressSchemaPut
 # Auth
@@ -14,6 +15,7 @@ from utils import serialize
 from database import get_db
 import requests
 import os
+import json
 router = APIRouter()
 
 
@@ -78,6 +80,32 @@ def get_addresses(current_user: User = Depends(get_current_user), session: Sessi
     return [serialize(x) for x in addresses]
 
 
+@router.delete('/{address_id}')
+def delete_address(address_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    addresses = session.query(Address).filter_by(
+        user_id=current_user.id).order_by(Address.date_created.desc()).all()
+    if len(addresses) == 0:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, CustomErrorMessage(
+            CustomErrorMessageEnum.USER_HAS_NO_ADDRESS, "User has no address saved", "").jsonify())
+    # get targeted address
+    try:
+        targeted_address = [x for x in addresses if x.id == address_id][0]
+    except:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, CustomErrorMessage(
+            CustomErrorMessageEnum.NO_ADDRESS_FOUND, "Address with that id doesnt exist for this user", "").jsonify())
+    # address is a default address, so set another one as default
+    if targeted_address.is_default:
+        # check to see if user has another address
+        addresses.remove(targeted_address)
+        if len(addresses) > 0:
+            new_default = addresses[0]
+            new_default.is_default = True
+
+    session.delete(targeted_address)
+    session.commit()
+    return status.HTTP_200_OK
+
+
 @router.post('', response_model=AddressSchemaOut)
 def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     # check to see if the name already exists
@@ -139,7 +167,7 @@ def put_orders(address_put: AddressSchemaPut, address_id: int, current_user: Use
             session.add(current_default_address)
     for key, value in address_put.dict().items():
         # If key is being edited
-        if value:
+        if value is not None:
             setattr(address_to_edit, key, value)
     if not is_address_valid(address_to_edit):
         raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
