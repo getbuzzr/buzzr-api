@@ -169,4 +169,4 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             order_id=new_order.id, product_id=ordered_product.product_id, quantity=ordered_product.quantity))
     session.bulk_save_objects(products_ordered_create)
     session.commit()
-    return {"id": new_order.id, "cost":  new_order.cost, "tip_amount": order.tip_amount, "tax_charge": total_tax, "delivery_fee": delivery_fee, "stripe_payment_intent_secret": payment_intent.client_secret}
+    return {"id": new_order.id, "cost":  new_order.cost, "tip_amount": order.tip_amount, "tax_charge": total_tax, "delivery_charge": delivery_fee, "stripe_payment_intent_secret": payment_intent.client_secret}
