@@ -142,8 +142,13 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         total_tax += tax_amount * quantity
         product_ordered.stock -= quantity
         if product_ordered.stock < 0:
-            raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
-                                detail=json.dumps({"reason": "out of stock", "product_id": product_ordered.id}))
+            raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, CustomErrorMessage(
+                                OrderErrorMessageEnum.ITEM_OUT_OF_STOCK, err_message="Item out of stock", err_detail=f"Product: {product_ordered.id}").jsonify()
+                                )
+    if total_cost == 0:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            CustomErrorMessage(
+                                OrderErrorMessageEnum.NO_COST_CALCULATED, err_message="You cant checkout with no items"))
     # add delivery fee,tip
     delivery_fee = calculate_address_delivery_fee(order.address_id)
     total_cost += delivery_fee
@@ -152,9 +157,6 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     total_cost = round(total_cost, 2)
     # round tax for return
     total_tax = round(total_tax, 2)
-    if total_cost == 0:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            "No cost calculated, make sure cart not empty")
     payment_intent = StripeApiClient('cad').generate_payment_intent(
         current_user.stripe_id, total_cost)
     # create new order
