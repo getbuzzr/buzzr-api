@@ -86,13 +86,13 @@ def delete_address(address_id: int, current_user: User = Depends(get_current_use
         user_id=current_user.id).order_by(Address.date_created.desc()).all()
     if len(addresses) == 0:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, CustomErrorMessage(
-            AddressErrorMessageEnum.USER_HAS_NO_ADDRESS, err_message="User has no address saved").jsonify())
+            AddressErrorMessageEnum.USER_HAS_NO_ADDRESS, error_message="User has no address saved").jsonify())
     # get targeted address
     try:
         targeted_address = [x for x in addresses if x.id == address_id][0]
     except:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, CustomErrorMessage(
-            AddressErrorMessageEnum.NO_ADDRESS_FOUND, err_message="Address with that id doesnt exist for this user").jsonify())
+            AddressErrorMessageEnum.NO_ADDRESS_FOUND, error_message="Address with that id doesnt exist for this user").jsonify())
     # address is a default address, so set another one as default
     if targeted_address.is_default:
         # check to see if user has another address

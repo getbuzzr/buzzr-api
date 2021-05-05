@@ -113,12 +113,12 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     if order.address_id is None and order.latitude is None and (order.longitude is None or order.latitude is None):
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             CustomErrorMessage(
-                                OrderErrorMessageEnum.ADDRESS_LAT_LNG_NOT_PRESENT, err_message="Order must have address of lat/lng").jsonify())
+                                OrderErrorMessageEnum.ADDRESS_LAT_LNG_NOT_PRESENT, error_message="Order must have address of lat/lng").jsonify())
     # check if user already has order
     if session.query(Order).filter_by(status=OrderStatusEnum.checking_out, user_id=current_user.id).first():
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             CustomErrorMessage(
-                                OrderErrorMessageEnum.ACTIVE_CHECKOUT_PRESENT, err_message="Active checkout already exists for user").jsonify())
+                                OrderErrorMessageEnum.ACTIVE_CHECKOUT_PRESENT, error_message="Active checkout already exists for user").jsonify())
     # calculate cost and tax amount
     total_cost = 0.0
     total_tax = 0.0
@@ -143,12 +143,12 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         product_ordered.stock -= quantity
         if product_ordered.stock < 0:
             raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE, CustomErrorMessage(
-                                OrderErrorMessageEnum.ITEM_OUT_OF_STOCK, err_message="Item out of stock", err_detail=f"Product: {product_ordered.id}").jsonify()
+                                OrderErrorMessageEnum.ITEM_OUT_OF_STOCK, error_message="Item out of stock", error_detail=f"Product: {product_ordered.id}").jsonify()
                                 )
     if total_cost == 0:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             CustomErrorMessage(
-                                OrderErrorMessageEnum.NO_COST_CALCULATED, err_message="You cant checkout with no items"))
+                                OrderErrorMessageEnum.NO_COST_CALCULATED, error_message="You cant checkout with no items"))
     # add delivery fee,tip
     delivery_fee = calculate_address_delivery_fee(order.address_id)
     total_cost += delivery_fee
