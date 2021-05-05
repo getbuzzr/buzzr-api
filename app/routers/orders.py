@@ -9,8 +9,9 @@ from models.Product import Product
 from models.ProductOrdered import ProductOrdered
 from models.StripeApiClient import StripeApiClient
 from models.SlackWebhookClient import SlackWebhookClient
+from models.CustomErrorMessage import OrderErrorMessageEnum, CustomErrorMessage
+# routers
 from routers.addresses import calculate_address_delivery_fee
-
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, OrderTipEditSchemaIn, OrderTipEditSchemaOut, OrderFeedbackSchemaIn
 # Auth
@@ -111,11 +112,13 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     # make sure order has one of address/lat/lng
     if order.address_id is None and order.latitude is None and (order.longitude is None or order.latitude is None):
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            "Must have address or lat long ")
+                            CustomErrorMessage(
+                                OrderErrorMessageEnum.ADDRESS_LAT_LNG_NOT_PRESENT, err_message="Order must have address of lat/lng").jsonify())
     # check if user already has order
     if session.query(Order).filter_by(status=OrderStatusEnum.checking_out, user_id=current_user.id).first():
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            "User has active checkout")
+                            CustomErrorMessage(
+                                OrderErrorMessageEnum.ACTIVE_CHECKOUT_PRESENT, err_message="Active checkout already exists for user").jsonify())
     # calculate cost and tax amount
     total_cost = 0.0
     total_tax = 0.0

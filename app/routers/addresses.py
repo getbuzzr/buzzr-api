@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 # Models
 from models.Address import Address
 from models.User import User
-from models.CustomErrorMessage import CustomErrorMessage, CustomErrorMessageEnum
+from models.CustomErrorMessage import CustomErrorMessage, AddressErrorMessageEnum
 # Schemas
 from schemas.AddressSchema import AddressSchemaIn, AddressSchemaOut, AddressSchemaPut
 # Auth
@@ -86,13 +86,13 @@ def delete_address(address_id: int, current_user: User = Depends(get_current_use
         user_id=current_user.id).order_by(Address.date_created.desc()).all()
     if len(addresses) == 0:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, CustomErrorMessage(
-            CustomErrorMessageEnum.USER_HAS_NO_ADDRESS, "User has no address saved", "").jsonify())
+            AddressErrorMessageEnum.USER_HAS_NO_ADDRESS, err_message="User has no address saved").jsonify())
     # get targeted address
     try:
         targeted_address = [x for x in addresses if x.id == address_id][0]
     except:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, CustomErrorMessage(
-            CustomErrorMessageEnum.NO_ADDRESS_FOUND, "Address with that id doesnt exist for this user", "").jsonify())
+            AddressErrorMessageEnum.NO_ADDRESS_FOUND, err_message="Address with that id doesnt exist for this user").jsonify())
     # address is a default address, so set another one as default
     if targeted_address.is_default:
         # check to see if user has another address
@@ -145,7 +145,7 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
 
 
 @router.put("/{address_id}", response_model=AddressSchemaOut)
-def put_orders(address_put: AddressSchemaPut, address_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+def put_address(address_put: AddressSchemaPut, address_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     # if you change location, you must add lat/lng
     if (address_put.street_address or address_put.city or address_put.country) is not None and None in (address_put.latitude, address_put.longitude):
         raise HTTPException(status.HTTP_400_BAD_REQUEST,

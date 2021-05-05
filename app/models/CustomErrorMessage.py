@@ -2,14 +2,21 @@ import enum
 import json
 
 
-class CustomErrorMessageEnum(str, enum.Enum):
+class AddressErrorMessageEnum(str, enum.Enum):
     NO_ADDRESS_FOUND = "NO_ADDRESS_FOUND"
     USER_HAS_NO_ADDRESS = "USER_HAS_NO_ADDRESS"
 
 
+class OrderErrorMessageEnum(str, enum.Enum):
+    ITEM_OUT_OF_STOCK = "ITEM_OUT_OF_STOCK"
+    ACTIVE_CHECKOUT_PRESENT = "ACTIVE_CHECKOUT_PRESENT"
+    ADDRESS_LAT_LNG_NOT_PRESENT = "ADDRESS_LAT_LNG_NOT_PRESENT"
+    NO_COST_CALCULATED = "NO_COST_CALCULATED"
+
+
 class CustomErrorMessage():
 
-    def __init__(self, err_code: CustomErrorMessageEnum, err_message: str, err_detail: str):
+    def __init__(self, err_code, err_message="", err_detail=""):
         # set up ses client
         self.err_code = err_code
         self.err_message = err_message
