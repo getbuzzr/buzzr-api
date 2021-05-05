@@ -53,6 +53,8 @@ def get_orders(current_user: User = Depends(get_current_user), session: Session 
         new_order = serialize(order)
         new_order['products_ordered'] = [
             serialize(x) for x in order.products_ordered]
+        if order.address:
+            new_order['address'] = serialize(order.address)
         orders_to_return.append(new_order)
     return orders_to_return
 
@@ -67,6 +69,8 @@ def get_order_id(order_id: int, current_user: User = Depends(get_current_user), 
     new_order = serialize(order)
     new_order['products_ordered'] = [
         serialize(x) for x in order.products_ordered]
+    if order.address:
+        new_order['address'] = serialize(order.address)
     return new_order
 
 
