@@ -10,6 +10,8 @@ from models.ProductOrdered import ProductOrdered
 from models.StripeApiClient import StripeApiClient
 from models.SlackWebhookClient import SlackWebhookClient
 from models.CustomErrorMessage import OrderErrorMessageEnum, CustomErrorMessage
+from models.Address import Address
+
 # routers
 from routers.addresses import calculate_address_delivery_fee
 # Schemas
@@ -119,9 +121,17 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             CustomErrorMessage(
                                 OrderErrorMessageEnum.ACTIVE_CHECKOUT_PRESENT, error_message="Active checkout already exists for user").jsonify())
+    # if address is specified, check if it exists
+    if order.address_id:
+        if session.query(Address).get(order.address_id) is None:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            CustomErrorMessage(
+                                OrderErrorMessageEnum.ADDRESS_DOESNT_EXIST, error_message="Address doesnt exist").jsonify())
+    # check to see if the address exists
     # calculate cost and tax amount
     total_cost = 0.0
     total_tax = 0.0
+    subtotal = 0.0
     # gather products ordered and remove stock
     products_ordered = session.query(Product).filter(
         Product.id.in_([x.product_id for x in order.products_ordered])).all()
@@ -137,7 +147,8 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         tax_amount = cost * (product_ordered.tax/100)
         # calculate total cost of product with tax
         cost_with_tax = cost + tax_amount
-        # append tax and total cost
+        # append tax and total cost, subtotal
+        subtotal += quantity * cost
         total_cost += quantity * cost_with_tax
         total_tax += tax_amount * quantity
         product_ordered.stock -= quantity
@@ -157,11 +168,13 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     total_cost = round(total_cost, 2)
     # round tax for return
     total_tax = round(total_tax, 2)
+    # round subtotal
+    subtotal = round(subtotal, 2)
     payment_intent = StripeApiClient('cad').generate_payment_intent(
         current_user.stripe_id, total_cost)
     # create new order
     new_order = Order(user_id=current_user.id, cost=total_cost, delivery_charge=delivery_fee, tax_charge=total_tax,
-                      status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id, tip_amount=order.tip_amount)
+                      status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id, tip_amount=order.tip_amount, subtotal=subtotal)
     # if order is associated with the address
     if order.address_id:
         new_order.address_id = order.address_id
@@ -178,4 +191,4 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             order_id=new_order.id, product_id=ordered_product.product_id, quantity=ordered_product.quantity))
     session.bulk_save_objects(products_ordered_create)
     session.commit()
-    return {"id": new_order.id, "cost":  new_order.cost, "tip_amount": order.tip_amount, "tax_charge": total_tax, "delivery_charge": delivery_fee, "stripe_payment_intent_secret": payment_intent.client_secret}
+    return {"id": new_order.id, "cost":  new_order.cost, "subtotal": subtotal, "tip_amount": order.tip_amount, "tax_charge": total_tax, "delivery_charge": delivery_fee, "stripe_payment_intent_secret": payment_intent.client_secret}

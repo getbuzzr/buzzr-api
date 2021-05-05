@@ -45,6 +45,7 @@ class Order(Base):
     date_failed = Column(DateTime)
     date_paid = Column(DateTime)
     tip_amount = Column(Float, default=0)
+    subtotal = Column(Float)
     last_updated = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     status = Column(Enum(OrderStatusEnum), server_default="checking_out")

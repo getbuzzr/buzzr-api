@@ -48,6 +48,7 @@ class OrderSchemaCreateOut(BaseModel):
     tax_charge: float
     delivery_charge: float
     tip_amount: float
+    subtotal: float
 
 
 class OrderSchemaOut(BaseModel):
@@ -71,6 +72,7 @@ class OrderSchemaOut(BaseModel):
     address: Optional[AddressSchemaOut]
     tax_charge: float
     delivery_charge: float
+    subtotal: float
 
 
 class OrderFeedbackSchemaIn(BaseModel):
