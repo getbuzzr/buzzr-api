@@ -13,6 +13,13 @@ product_tags = Table('product_tags', Base.metadata,
                             default=datetime.datetime.utcnow))
 
 
+class ProductUnitEnum(str, enum.Enum):
+    weight = "weight"
+    pack = 'pack'
+    volume = 'volume'
+    piece = 'piece'
+
+
 class Product(Base):
     """Base Product Model
     """
@@ -27,12 +34,13 @@ class Product(Base):
     department_id = Column(Integer, ForeignKey('department.id'))
     last_updated = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    weight = Column(Integer)
+    quantity = Column(Integer)
     cost = Column(Float)
     tax = Column(Float, default=0)
     percent_discount = Column(Integer, default=0)
     image_url = Column(String(300))
-    quantity_per_order = Column(Integer)
+    unit = Column(
+        Enum(ProductUnitEnum), server_default="weight")
     tags = relationship(
         'ProductTag', secondary=product_tags, backref=backref('product'))
     product_ordered = relationship(
