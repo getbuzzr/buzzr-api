@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr, constr
 from typing import Optional, List
 from datetime import datetime
+from models.Product import ProductUnitEnum
 
 
 class ProductTags(BaseModel):
@@ -16,10 +17,10 @@ class ProductSchemaOut(BaseModel):
     stock: int
     description: Optional[str]
     department_id: int
-    weight: int
+    quantity: int
     cost: float
     image_url: Optional[str]
     id: int
     percent_discount: int
-    quantity_per_order: int
     tax: float
+    unit: ProductUnitEnum
