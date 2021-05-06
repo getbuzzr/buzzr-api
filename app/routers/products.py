@@ -17,6 +17,15 @@ from database import get_db
 router = APIRouter()
 
 
+@router.get('/{product_id}', response_model=ProductSchemaOut)
+def get_product(product_id: int, session: Session = Depends(get_db)):
+    product = session.query(Product).get(product_id)
+    if product is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND)
+    return serialize(product)
+
+
 @router.get('/{product_id}/tags', response_model=List[ProductTags])
 def get_tags(product_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     product = session.query(Product).get(product_id)
