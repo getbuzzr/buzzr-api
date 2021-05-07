@@ -31,4 +31,4 @@ class CustomErrorMessage():
         """
         error_detail = {"err_code": self.err_code.value,
                         "error_message": self.error_message, "error_detail": self.error_detail}
-        return json.dumps(error_detail)
+        return error_detail
