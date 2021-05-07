@@ -12,7 +12,7 @@ class OrderSchemaIn(BaseModel):
     address_id: Optional[int]
     longitude: Optional[float]
     latitude: Optional[float]
-    tip_amount: float
+    tip_amount: int
 
 
 class OrderSchemaEdit(BaseModel):
@@ -20,18 +20,18 @@ class OrderSchemaEdit(BaseModel):
 
 
 class OrderTipEditSchemaIn(BaseModel):
-    tip_amount: float
+    tip_amount: int
 
 
 class OrderTipEditSchemaOut(BaseModel):
     stripe_payment_intent_secret:  str
-    cost: float
+    cost: int
     id: int
 
 
 class AdminOrderSchemaEdit(BaseModel):
     products_ordered: Optional[conlist(ProductOrderSchemaIn, min_items=1)]
-    cost: Optional[float]
+    cost: Optional[int]
     status: Optional[OrderStatusEnum]
 
 
@@ -45,10 +45,10 @@ class OrderSchemaCreateOut(BaseModel):
     cost: float
     id: int
     stripe_payment_intent_secret: str
-    tax_charge: float
-    delivery_charge: float
-    tip_amount: float
-    subtotal: float
+    tax_charge: int
+    delivery_charge: int
+    tip_amount: int
+    subtotal: int
 
 
 class OrderSchemaOut(BaseModel):
@@ -57,7 +57,7 @@ class OrderSchemaOut(BaseModel):
     products_ordered: Optional[List[ProductOrderSchemaOut]]
     stars: Optional[StarRatingEnum]
     feedback: Optional[str]
-    cost: float
+    cost: int
     date_created: datetime
     date_delivered:  Optional[datetime]
     status: OrderStatusEnum
@@ -66,13 +66,13 @@ class OrderSchemaOut(BaseModel):
     date_out_for_delivery:  Optional[datetime]
     date_complete:  Optional[datetime]
     date_failed:  Optional[datetime]
-    tip_amount:  Optional[float]
+    tip_amount:  Optional[int]
     latitude: Optional[float]
     longitude: Optional[float]
     address: Optional[AddressSchemaOut]
-    tax_charge: float
-    delivery_charge: float
-    subtotal: float
+    tax_charge: int
+    delivery_charge: int
+    subtotal: int
 
 
 class OrderFeedbackSchemaIn(BaseModel):

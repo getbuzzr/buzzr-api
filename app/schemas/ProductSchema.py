@@ -18,7 +18,7 @@ class ProductSchemaOut(BaseModel):
     description: Optional[str]
     department_id: int
     quantity: int
-    cost: float
+    cost: int
     image_url: Optional[str]
     id: int
     percent_discount: int

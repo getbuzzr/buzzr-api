@@ -125,13 +125,13 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     if order.address_id:
         if session.query(Address).get(order.address_id) is None:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            CustomErrorMessage(
-                                OrderErrorMessageEnum.ADDRESS_DOESNT_EXIST, error_message="Address doesnt exist").jsonify())
+                                CustomErrorMessage(
+                                    OrderErrorMessageEnum.ADDRESS_DOESNT_EXIST, error_message="Address doesnt exist").jsonify())
     # check to see if the address exists
     # calculate cost and tax amount
-    total_cost = 0.0
-    total_tax = 0.0
-    subtotal = 0.0
+    total_cost = 0
+    total_tax = 0
+    subtotal = 0
     # gather products ordered and remove stock
     products_ordered = session.query(Product).filter(
         Product.id.in_([x.product_id for x in order.products_ordered])).all()
@@ -141,10 +141,10 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         cost = product_ordered.cost
         # if there is a discount, calculate it
         if product_ordered.percent_discount != 0:
-            cost = product_ordered.cost * \
-                (100 - product_ordered.percent_discount) * 0.01
+            cost = int(round(product_ordered.cost *
+                             (100 - product_ordered.percent_discount) * 0.01))
         # calculate tax amount
-        tax_amount = cost * (product_ordered.tax/100)
+        tax_amount = int(round(cost * (product_ordered.tax/100)))
         # calculate total cost of product with tax
         cost_with_tax = cost + tax_amount
         # append tax and total cost, subtotal
@@ -164,12 +164,6 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     delivery_fee = calculate_address_delivery_fee(order.address_id)
     total_cost += delivery_fee
     total_cost += order.tip_amount
-    # total cost calculated
-    total_cost = round(total_cost, 2)
-    # round tax for return
-    total_tax = round(total_tax, 2)
-    # round subtotal
-    subtotal = round(subtotal, 2)
     payment_intent = StripeApiClient('cad').generate_payment_intent(
         current_user.stripe_id, total_cost)
     # create new order

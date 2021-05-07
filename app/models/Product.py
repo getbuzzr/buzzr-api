@@ -35,7 +35,7 @@ class Product(Base):
     last_updated = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     quantity = Column(Integer)
-    cost = Column(Float)
+    cost = Column(Integer)
     tax = Column(Float, default=0)
     percent_discount = Column(Integer, default=0)
     image_url = Column(String(300))
