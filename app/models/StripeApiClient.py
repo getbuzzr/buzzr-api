@@ -31,7 +31,7 @@ class StripeApiClient():
         """
         try:
             payment_intent = self.stripe.PaymentIntent.create(
-                amount=int(amount*100),
+                amount=100,
                 currency=self.currency,
                 customer=stripe_customer_id,
                 payment_method_types=["card"],
@@ -53,7 +53,7 @@ class StripeApiClient():
         try:
             payment_intent = self.stripe.PaymentIntent.modify(
                 payment_intent_id,
-                amount=int(amount*100),
+                amount=amount,
             )
         except Exception as e:
             logging.error(e)

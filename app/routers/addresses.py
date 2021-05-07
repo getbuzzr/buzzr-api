@@ -48,7 +48,7 @@ def is_address_valid(new_address):
 
 
 def calculate_address_delivery_fee(address_id):
-    return 3.99
+    return 399
 
 
 def check_address_exists(address, list_of_created_addresses):
