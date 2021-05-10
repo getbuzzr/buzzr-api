@@ -31,7 +31,7 @@ class StripeApiClient():
         """
         try:
             payment_intent = self.stripe.PaymentIntent.create(
-                amount=100,
+                amount=amount,
                 currency=self.currency,
                 customer=stripe_customer_id,
                 payment_method_types=["card"],
