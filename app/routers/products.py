@@ -47,6 +47,7 @@ def add_favorites(product_id: int, current_user: User = Depends(get_current_user
     current_user.favorite_products.append(product)
     session.add(current_user)
     session.commit()
+    session.close()
     return status.HTTP_200_OK
 
 
@@ -62,6 +63,7 @@ def delete_favorites(product_id: int, current_user: User = Depends(get_current_u
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             "This product is not favorited")
     session.commit()
+    session.close()
     return status.HTTP_200_OK
 
 
