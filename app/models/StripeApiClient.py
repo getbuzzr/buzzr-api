@@ -19,6 +19,38 @@ class StripeApiClient():
         self.stripe = stripe
         self.stripe.api_key = STRIPE_SECRET
 
+    def get_saved_payment_info(self, stripe_customer_id):
+        """Get all the payment information related to the customer
+
+        Args:
+            stripe_customer_id (string): stripe customer id
+        """
+        try:
+            payment_methods = self.stripe.PaymentMethod.list(
+                customer=stripe_customer_id,
+                type="card"
+            )
+        except Exception as e:
+            logging.error(e)
+            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return payment_methods.data
+
+    def generate_ephemeral_key(self, stripe_customer_id):
+        """Generate ephemeral key which allows client access to customer data on Stripe
+
+        Args:
+            stripe_customer_id ([str]): This customer id of stripe user
+        """
+        try:
+            ephemeral_key = self.stripe.EphemeralKey.create(
+                customer=stripe_customer_id,
+                stripe_version='2020-08-27'
+            )
+        except Exception as e:
+            logging.error(e)
+            raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return ephemeral_key
+
     def generate_payment_intent(self, stripe_customer_id, amount):
         """Generate stripe payment intent to charge card
 

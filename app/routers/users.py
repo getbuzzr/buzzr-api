@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from schemas.UserSchema import UserSchemaOut, UserSchemaIn, UserSchemaPut, UserPhoneNumberPut
+from schemas.UserSchema import UserSchemaOut, UserSchemaIn, UserSchemaPut, UserPhoneNumberPut, UserPaymentMethods
 from schemas.FileSchema import PictureSchemaIn, S3PresignedUrlSchemaOut
 # Models
 from models.User import User, UserRoleEnum
@@ -16,12 +16,20 @@ from database import get_db
 from utils import validate_phone_number
 import boto3
 import random
+from models.StripeApiClient import StripeApiClient
 router = APIRouter()
 
 
 @router.get('', response_model=UserSchemaOut)
 def retrieve_user_data(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     return serialize(current_user)
+
+
+@router.get('/get_payment_methods', response_model=List[UserPaymentMethods])
+def get_payment_methods(current_user: User = Depends(get_current_user)):
+    payment_methods = StripeApiClient(
+        'cad').get_saved_payment_info(current_user.stripe_id)
+    return payment_methods
 
 
 @router.put('')

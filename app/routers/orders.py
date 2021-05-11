@@ -166,6 +166,8 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     total_cost += order.tip_amount
     payment_intent = StripeApiClient('cad').generate_payment_intent(
         current_user.stripe_id, total_cost)
+    stripe_ephemeral_key = StripeApiClient('cad').generate_ephemeral_key(
+        current_user.stripe_id)
     # create new order
     new_order = Order(user_id=current_user.id, cost=total_cost, delivery_charge=delivery_fee, tax_charge=total_tax,
                       status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id, tip_amount=order.tip_amount, subtotal=subtotal)
@@ -185,4 +187,4 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             order_id=new_order.id, product_id=ordered_product.product_id, quantity=ordered_product.quantity))
     session.bulk_save_objects(products_ordered_create)
     session.commit()
-    return {"id": new_order.id, "cost":  new_order.cost, "subtotal": subtotal, "tip_amount": order.tip_amount, "tax_charge": total_tax, "delivery_charge": delivery_fee, "stripe_payment_intent_secret": payment_intent.client_secret}
+    return {"id": new_order.id, "cost":  new_order.cost, "subtotal": subtotal, "tip_amount": order.tip_amount, "tax_charge": total_tax, "delivery_charge": delivery_fee, "stripe_payment_intent_secret": payment_intent.client_secret, 'stripe_customer_id': current_user.stripe_id, 'stripe_ephemeral_key': stripe_ephemeral_key.secret}

@@ -49,6 +49,8 @@ class OrderSchemaCreateOut(BaseModel):
     delivery_charge: int
     tip_amount: int
     subtotal: int
+    stripe_ephemeral_key: str
+    stripe_customer_id: str
 
 
 class OrderSchemaOut(BaseModel):
@@ -62,7 +64,7 @@ class OrderSchemaOut(BaseModel):
     date_delivered:  Optional[datetime]
     status: OrderStatusEnum
     id: int
-    date_prepared:  Optional[datetime]
+    date_preparing:  Optional[datetime]
     date_out_for_delivery:  Optional[datetime]
     date_complete:  Optional[datetime]
     date_failed:  Optional[datetime]

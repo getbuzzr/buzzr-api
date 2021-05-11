@@ -50,3 +50,33 @@ class UserSchemaOut(BaseModel):
     referral_id: Optional[str]
     phone_verification_code: Optional[str]
     is_phone_verified: Optional[bool]
+
+
+class UserPaymentCardAddress(BaseModel):
+    city: Optional[str]
+    country: Optional[str]
+    line1: Optional[str]
+    line2: Optional[str]
+    postal_code: Optional[str]
+    state: Optional[str]
+
+
+class UserPaymentBillingDetails(BaseModel):
+    address: UserPaymentCardAddress
+    email: Optional[str]
+    name: Optional[str]
+    phone: Optional[str]
+
+
+class UserCardDetails(BaseModel):
+    brand: str
+    country: str
+    exp_month: int
+    exp_year: int
+    last4: str
+
+
+class UserPaymentMethods(BaseModel):
+    id: str
+    billing_details: UserPaymentBillingDetails
+    card: UserCardDetails
