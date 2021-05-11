@@ -103,6 +103,7 @@ def delete_address(address_id: int, current_user: User = Depends(get_current_use
 
     session.delete(targeted_address)
     session.commit()
+    session.close()
     return status.HTTP_200_OK
 
 
@@ -141,6 +142,7 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
             new_address.is_default = True
     session.add(new_address)
     session.commit()
+    session.close()
     return serialize(new_address)
 
 
@@ -173,4 +175,5 @@ def put_address(address_put: AddressSchemaPut, address_id: int, current_user: Us
         raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
                             "Address too far away")
     session.commit()
+    session.close()
     return serialize(address_to_edit)

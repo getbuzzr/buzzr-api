@@ -43,6 +43,7 @@ def delete_orders(order_id: int, current_user: User = Depends(get_current_user),
         product_ordered.stock += quantity
     session.delete(order)
     session.commit()
+    session.close()
     return status.HTTP_200_OK
 
 
@@ -87,6 +88,7 @@ def put_order_feedback(new_order_feedback: OrderFeedbackSchemaIn, order_id: int,
     order.feedback = new_order_feedback.feedback
     order.stars = new_order_feedback.stars
     session.commit()
+    session.close()
     return status.HTTP_200_OK
 
 
@@ -106,6 +108,7 @@ def put_order_tip(new_order_tip: OrderTipEditSchemaIn, order_id: int, current_us
     order.cost = new_cost
     order.tip_amount = new_order_tip.tip_amount
     session.commit()
+    session.close()
     return {"id": order.id, "cost": order.cost, "stripe_payment_intent_secret": payment_intent_secret}
 
 
@@ -187,4 +190,5 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             order_id=new_order.id, product_id=ordered_product.product_id, quantity=ordered_product.quantity))
     session.bulk_save_objects(products_ordered_create)
     session.commit()
+    session.close()
     return {"id": new_order.id, "cost":  new_order.cost, "subtotal": subtotal, "tip_amount": order.tip_amount, "tax_charge": total_tax, "delivery_charge": delivery_fee, "stripe_payment_intent_secret": payment_intent.client_secret, 'stripe_customer_id': current_user.stripe_id, 'stripe_ephemeral_key': stripe_ephemeral_key.secret}
