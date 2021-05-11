@@ -41,7 +41,6 @@ def edit_user(user_put_body: UserSchemaPut, current_user: User = Depends(get_cur
             setattr(current_user, key, value)
     # push edits
     session.commit()
-    session.close()
     return serialize(current_user)
 
 
@@ -64,7 +63,6 @@ def add_user_phone(user_phone_number_put: UserPhoneNumberPut, current_user: User
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "Couldnt send sms")
     session.commit()
-    session.close()
     # send TODO sns to client to validat
     return status.HTTP_200_OK
 
@@ -79,7 +77,6 @@ def confirm_phone(verification_code: str = None, current_user: User = Depends(ge
                             "Wrong verificateion code")
     current_user.is_phone_verified = True
     session.commit()
-    session.close()
     return status.HTTP_200_OK
 
 
@@ -99,6 +96,5 @@ def upload_profile_picture_post(file_upload: PictureSchemaIn, user_id: int, curr
     current_user.profile_picture_url = profile_picture_url
     session.add(current_user)
     session.commit()
-    session.close()
     # return presigned url
     return return_presigned_data

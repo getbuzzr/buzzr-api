@@ -74,7 +74,6 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
     # set date order paid
     order.date_paid = datetime_now
     session.commit()
-    session.close()
     # post order to slack webhook
     SlackWebhookClient().post_delivery(order.id, order.user.id, order.address,
                                        f"{order.user.first_name} {order.user.last_name}", order.products_ordered)
@@ -118,5 +117,4 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
     elif order.status.value == "complete":
         edited_order.date_complete = datetime_now
     session.commit()
-    session.close()
     return status.HTTP_200_OK
