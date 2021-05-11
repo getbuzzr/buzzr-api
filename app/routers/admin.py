@@ -94,7 +94,8 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
     # iterate through all the attributes of the usereditschema
     messages = {'preparing': generate_apple_order_push_payload("Your order is being prepared", f"Your order #{order_id} is now being prepared by our team", OrderStatusEnum.preparing),
                 "out_for_delivery": generate_apple_order_push_payload("Your order is being delivered", f"Your order #{order_id} is now being delivered by a rider from our team. It will be there shortly", OrderStatusEnum.out_for_delivery),
-                "delivered": generate_apple_order_push_payload("Your order has arrived", f"Your order #{order_id} has arrived!", OrderStatusEnum.out_for_delivery)}
+                "delivered": generate_apple_order_push_payload("Your order has arrived", f"Your order #{order_id} has arrived!", OrderStatusEnum.out_for_delivery),
+                "complete": generate_apple_order_push_payload("Thank you for your order", f"Your order #{order_id} has been complete!", OrderStatusEnum.complete)}
     try:
         message = messages[order.status.value]
     except:
@@ -105,4 +106,15 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
         send_push_sns(targeted_user.apn_token, "ios", message)
     if targeted_user.fcm_token:
         send_push_sns(targeted_user.fcm_token, "android", message)
+    # update the db
+    datetime_now = datetime.datetime.utcnow()
+    if order.status.value == "preparing":
+        edited_order.date_preparing = datetime_now
+    elif order.status.value == "out_for_delivery":
+        edited_order.date_out_for_delivery = datetime_now
+    elif order.status.value == "delivered":
+        edited_order.date_delivered = datetime_now
+    elif order.status.value == "complete":
+        edited_order.date_complete = datetime_now
+    session.commit()
     return status.HTTP_200_OK
