@@ -49,6 +49,7 @@ class OrderSchemaCreateOut(BaseModel):
     delivery_charge: int
     tip_amount: int
     subtotal: int
+    stripe_ephemeral_key: str
     stripe_customer_id: str
 
 

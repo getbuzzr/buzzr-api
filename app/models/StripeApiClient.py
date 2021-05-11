@@ -44,7 +44,7 @@ class StripeApiClient():
         try:
             ephemeral_key = self.stripe.EphemeralKey.create(
                 customer=stripe_customer_id,
-                apiVersion='2020-08-27'
+                stripe_version='2020-08-27'
             )
         except Exception as e:
             logging.error(e)
