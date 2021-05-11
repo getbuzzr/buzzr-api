@@ -6,8 +6,8 @@ from contextlib import contextmanager
 
 # initialize db env
 engine = create_engine(os.environ.get(
-    'SQLALCHEMY_DATABASE_URI'), echo=True)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    'SQLALCHEMY_DATABASE_URI'))
+SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
 Base = declarative_base()
 metadata = Base.metadata
 
