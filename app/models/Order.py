@@ -39,7 +39,7 @@ class Order(Base):
     cost = Column(Integer)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_delivered = Column(DateTime)
-    date_prepared = Column(DateTime)
+    date_preparing = Column(DateTime)
     date_out_for_delivery = Column(DateTime)
     date_complete = Column(DateTime)
     date_failed = Column(DateTime)
