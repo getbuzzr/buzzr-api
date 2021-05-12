@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
 # Models
-from models.Address import Address
+from models.Address import Address, AddressStatusEnum
 from models.User import User
 from models.CustomErrorMessage import CustomErrorMessage, AddressErrorMessageEnum
 # Schemas
@@ -76,7 +76,7 @@ def get_addresses_delivery_fee(address_id: int, current_user: User = Depends(get
 @router.get('', response_model=List[AddressSchemaOut])
 def get_addresses(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     addresses = session.query(Address).filter_by(
-        user_id=current_user.id).order_by(Address.date_created.desc()).all()
+        user_id=current_user.id, status=AddressStatusEnum.active).order_by(Address.date_created.desc()).all()
     return [serialize(x) for x in addresses]
 
 
@@ -100,8 +100,7 @@ def delete_address(address_id: int, current_user: User = Depends(get_current_use
         if len(addresses) > 0:
             new_default = addresses[0]
             new_default.is_default = True
-
-    session.delete(targeted_address)
+    targeted_address.status = AddressStatusEnum.deleted
     session.commit()
     return status.HTTP_200_OK
 

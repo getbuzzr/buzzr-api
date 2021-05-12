@@ -27,6 +27,8 @@ class OrderTipEditSchemaOut(BaseModel):
     stripe_payment_intent_secret:  str
     cost: int
     id: int
+    stripe_ephemeral_key: str
+    stripe_customer_id: str
 
 
 class AdminOrderSchemaEdit(BaseModel):

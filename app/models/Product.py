@@ -20,6 +20,12 @@ class ProductUnitEnum(str, enum.Enum):
     piece = 'piece'
 
 
+class ProductStatusEnum(str, enum.Enum):
+    active = "active"
+    deleted = "deleted"
+    hidden = "hidden"
+
+
 class Product(Base):
     """Base Product Model
     """
@@ -41,6 +47,8 @@ class Product(Base):
     image_url = Column(String(300))
     unit = Column(
         Enum(ProductUnitEnum), server_default="weight")
+    status = Column(
+        Enum(ProductStatusEnum),server_default=("active"))
     tags = relationship(
         'ProductTag', secondary=product_tags, backref=backref('product'))
     product_ordered = relationship(

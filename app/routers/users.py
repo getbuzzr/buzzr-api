@@ -63,7 +63,6 @@ def add_user_phone(user_phone_number_put: UserPhoneNumberPut, current_user: User
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "Couldnt send sms")
     session.commit()
-    # send TODO sns to client to validat
     return status.HTTP_200_OK
 
 
@@ -74,7 +73,7 @@ def confirm_phone(verification_code: str = None, current_user: User = Depends(ge
                             "Could not get verification_code in querystring")
     if verification_code != current_user.phone_verification_code:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            "Wrong verificateion code")
+                            "Wrong verification code")
     current_user.is_phone_verified = True
     session.commit()
     return status.HTTP_200_OK

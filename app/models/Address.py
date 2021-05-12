@@ -13,6 +13,11 @@ class DeliveryPreferenceEnum(str, enum.Enum):
     meet_downstairs = 'meet_downstairs'
 
 
+class AddressStatusEnum(str, enum.Enum):
+    active = "active"
+    deleted = "deleted"
+
+
 class Address(Base):
     """Base Category """
 
@@ -34,6 +39,8 @@ class Address(Base):
     additional_instructions = Column(String(200))
     delivery_preference = Column(
         Enum(DeliveryPreferenceEnum))
+    status = Column(
+        Enum(AddressStatusEnum), server_default=("active"))
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     last_login = Column(DateTime, default=datetime.datetime.utcnow)
     orders = relationship(
