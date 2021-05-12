@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from models.Department import Department
 from models.User import User
 from models.Category import Category
-from models.Product import Product
+from models.Product import Product, ProductStatusEnum
 # schemas
 from schemas.DepartmentSchema import DepartmentSchemaOut
 from schemas.CategorySchema import CategorySchemaOut
@@ -34,5 +34,5 @@ def get_department_categories(department_id: int, session: Session = Depends(get
 def get_department_products(department_id: int,  session: Session = Depends(get_db)):
     # serialize pictures/tags as they are one to many
     department_products = session.query(Product).filter_by(
-        department_id=department_id).all()
+        department_id=department_id, status=ProductStatusEnum.active).all()
     return [serialize(x) for x in department_products]

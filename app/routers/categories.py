@@ -19,5 +19,5 @@ router = APIRouter()
 @router.get('/{category_id}/products', response_model=List[ProductSchemaOut])
 def get_category_products(category_id: int,  session: Session = Depends(get_db)):
     return_product = session.query(Product).filter_by(
-        category_id=category_id).all()
+        category_id=category_id, status=ProductStatusEnum.active).all()
     return [x.serialize_product() for x in return_product]

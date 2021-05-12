@@ -1,7 +1,7 @@
 from pydantic import BaseModel, EmailStr, constr
 from typing import Optional, List
 from datetime import datetime
-from models.Product import ProductUnitEnum
+from models.Product import ProductUnitEnum, ProductStatusEnum
 
 
 class ProductTags(BaseModel):
@@ -24,3 +24,4 @@ class ProductSchemaOut(BaseModel):
     percent_discount: int
     tax: float
     unit: ProductUnitEnum
+    status: ProductStatusEnum
