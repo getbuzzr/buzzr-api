@@ -103,10 +103,12 @@ def put_order_tip(new_order_tip: OrderTipEditSchemaIn, order_id: int, current_us
     # generate new payment intent secret
     payment_intent_secret = StripeApiClient('cad').edit_payment_intent(
         order.stripe_payment_intent, new_cost)
+    stripe_ephemeral_key = StripeApiClient('cad').generate_ephemeral_key(
+        current_user.stripe_id)
     order.cost = new_cost
     order.tip_amount = new_order_tip.tip_amount
     session.commit()
-    return {"id": order.id, "cost": order.cost, "stripe_payment_intent_secret": payment_intent_secret}
+    return {"id": order.id, "cost": order.cost, "stripe_payment_intent_secret": payment_intent_secret, 'stripe_customer_id': current_user.stripe_id, 'stripe_ephemeral_key': stripe_ephemeral_key.secret}
 
 
 @router.post('', response_model=OrderSchemaCreateOut)
