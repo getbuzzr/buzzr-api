@@ -26,24 +26,24 @@ import json
 
 router = APIRouter()
 
-
-@router.delete('/{order_id}')
-def delete_orders(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
-    order = session.query(Order).filter_by(
-        user_id=current_user.id, id=order_id, status=OrderStatusEnum.checking_out).first()
-    if order is None:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            "active order doesnt exist or doesnt belong to user")
-    # return stock to the product
-    products_ordered = session.query(Product).filter(
-        Product.id.in_([x.product_id for x in order.products_ordered])).all()
-    for product_ordered in products_ordered:
-        quantity = [
-            x.quantity for x in order.products_ordered if x.product_id == product_ordered.id][0]
-        product_ordered.stock += quantity
-    session.delete(order)
-    session.commit()
-    return status.HTTP_200_OK
+# Commented out in case we want to support in future
+# @router.delete('/{order_id}')
+# def delete_orders(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+#     order = session.query(Order).filter_by(
+#         user_id=current_user.id, id=order_id, status=OrderStatusEnum.checking_out).first()
+#     if order is None:
+#         raise HTTPException(status.HTTP_400_BAD_REQUEST,
+#                             "active order doesnt exist or doesnt belong to user")
+#     # return stock to the product
+#     products_ordered = session.query(Product).filter(
+#         Product.id.in_([x.product_id for x in order.products_ordered])).all()
+#     for product_ordered in products_ordered:
+#         quantity = [
+#             x.quantity for x in order.products_ordered if x.product_id == product_ordered.id][0]
+#         product_ordered.stock += quantity
+#     session.delete(order)
+#     session.commit()
+#     return status.HTTP_200_OK
 
 
 @router.get('', response_model=List[OrderSchemaOut])
@@ -116,11 +116,11 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             CustomErrorMessage(
                                 OrderErrorMessageEnum.ADDRESS_LAT_LNG_NOT_PRESENT, error_message="Order must have address of lat/lng").jsonify())
-    # check if user already has order
-    if session.query(Order).filter_by(status=OrderStatusEnum.checking_out, user_id=current_user.id).first():
-        raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            CustomErrorMessage(
-                                OrderErrorMessageEnum.ACTIVE_CHECKOUT_PRESENT, error_message="Active checkout already exists for user").jsonify())
+    # check if user already has order in "checking out"
+    preexisting_order = session.query(Order).filter_by(
+        status=OrderStatusEnum.checking_out, user_id=current_user.id).first()
+    if preexisting_order:
+        session.delete(preexisting_order)
     # if address is specified, check if it exists
     if order.address_id:
         if session.query(Address).get(order.address_id) is None:
