@@ -73,6 +73,16 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
                       "Your Order has been successfully paid for. Our team will begin preparing your order shortly")
     # set date order paid
     order.date_paid = datetime_now
+    # reward referring user for user purchase
+    if user.referrer_id:
+        # only reward if its first purchase
+        if session.query(Order).filter_by(user_id=user.id).count() == 1:
+            referrer = session.query(User).get(user.referrer_id)
+            referrer.credit += 500
+            user.is_referrer_rewarded = True
+    # subtract credit form user if credit was used
+    if order.credit_used > 0:
+        user.credit -= order.credit_used
     session.commit()
     # post order to slack webhook
     SlackWebhookClient().post_delivery(order.id, order.user.id, order.address,

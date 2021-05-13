@@ -32,6 +32,7 @@ class UserSchemaPut(BaseModel):
 
 class UserPhoneNumberPut(BaseModel):
     phone_number: str
+    country_code:str
 
 
 class UserSchemaOut(BaseModel):
@@ -47,9 +48,9 @@ class UserSchemaOut(BaseModel):
     date_created: datetime
     apn_token: Optional[str]
     fcm_token: Optional[str]
-    referral_id: Optional[str]
     phone_verification_code: Optional[str]
     is_phone_verified: Optional[bool]
+    credit: int
 
 
 class UserPaymentCardAddress(BaseModel):
@@ -80,3 +81,7 @@ class UserPaymentMethods(BaseModel):
     id: str
     billing_details: UserPaymentBillingDetails
     card: UserCardDetails
+
+
+class ReferralCodeIn(BaseModel):
+    referral_code: str
