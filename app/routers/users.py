@@ -2,12 +2,12 @@ from fastapi import APIRouter, HTTPException, Depends, status
 import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from schemas.UserSchema import UserSchemaOut, UserSchemaIn, UserSchemaPut, UserPhoneNumberPut, UserPaymentMethods
+from schemas.UserSchema import UserSchemaOut, UserSchemaIn, UserSchemaPut, UserPhoneNumberPut, UserPaymentMethods, ReferralCodeIn
 from schemas.FileSchema import PictureSchemaIn, S3PresignedUrlSchemaOut
 # Models
 from models.User import User, UserRoleEnum
 from models.S3StaticFileClient import S3StaticFileClient
-
+from models.CustomErrorMessage import UserErrorMessageEnum, CustomErrorMessage
 # Auth
 from auth import get_current_user, has_user_read_update_perms, is_admin
 from utils import serialize, validate_id_querystring
@@ -18,6 +18,27 @@ import boto3
 import random
 from models.StripeApiClient import StripeApiClient
 router = APIRouter()
+
+
+@router.post("/referral_code")
+def post_referral_code(referral_code: ReferralCodeIn, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    """
+    Apply referral code to user
+    """
+    # user already referred
+    if current_user.referrer_id is not None:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, CustomErrorMessage(
+            UserErrorMessageEnum.ALREADY_REFFERED, error_message="User has already been referred").jsonify())
+    # get referring user
+    referring_user = session.query(User).filter_by(
+        referral_code=referral_code.referral_code).first()
+    # no user found
+    if referring_user is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    current_user.referring_user = referring_user.id
+    current_user.credit = 500
+    session.commit()
+    return status.HTTP_200_OK
 
 
 @router.get('', response_model=UserSchemaOut)
@@ -47,17 +68,20 @@ def edit_user(user_put_body: UserSchemaPut, current_user: User = Depends(get_cur
 @router.put('/add_phone_number')
 def add_user_phone(user_phone_number_put: UserPhoneNumberPut, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     phone_number = user_phone_number_put.phone_number
-    if validate_phone_number(phone_number) == False:
+    country_code = user_phone_number_put.country_code
+    full_phone = f"+{country_code}{phone_number}"
+    if validate_phone_number(full_phone) == False:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             "Phone number not valid")
     verification_code = ''.join(random.sample('0123456789', 5))
     current_user.phone_number = phone_number
+    current_user.country_code = country_code
     current_user.phone_verification_code = verification_code
     client = boto3.client('sns')
     # send sms
     try:
-        message = client.publish(PhoneNumber=phone_number,
-                                 Message=f"Your buzzr verification code is {verification_code}")
+        message = client.publish(PhoneNumber=full_phone,
+                                 Message=f"Your Buzzr verification code is {verification_code}")
     except Exception as e:
         logging.error(f'Exception sending sms')
         raise HTTPException(

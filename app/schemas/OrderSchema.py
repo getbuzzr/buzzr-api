@@ -53,6 +53,7 @@ class OrderSchemaCreateOut(BaseModel):
     subtotal: int
     stripe_ephemeral_key: str
     stripe_customer_id: str
+    credit_used: int
 
 
 class OrderSchemaOut(BaseModel):

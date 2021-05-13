@@ -57,3 +57,4 @@ class Order(Base):
     refund_requested = Column(Boolean, default=False)
     delivery_charge = Column(Integer)
     tax_charge = Column(Integer)
+    credit_used = Column(Integer)

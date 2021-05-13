@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
 # Models
-from models.Product import Product
+from models.Product import Product, ProductStatusEnum
 from models.Department import Department
 # schemas
 from schemas.ProductSchema import ProductSchemaOut

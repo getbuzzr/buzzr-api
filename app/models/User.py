@@ -4,6 +4,7 @@ import logging
 import datetime
 from sqlalchemy.orm import relationship, backref
 import enum
+from uuid import uuid4
 
 favorite_products = Table('favorite_products', Base.metadata,
                           Column(
@@ -29,15 +30,17 @@ class User(Base):
     first_name = Column(String(100))
     last_name = Column(String(100))
     phone_number = Column(String(20))
+    phone_country_code = Column(String(5))
     additional_information = Column(String(200))
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     last_login = Column(DateTime, default=datetime.datetime.utcnow)
     apn_token = Column(String(100))
     fcm_token = Column(String(100))
     profile_picture_url = Column(String(400))
-    referral_id = Column(String(10))
+    referral_code = Column(String(10))
     referrer_id = Column(Integer)
     stripe_id = Column(String(20))
+    credit = Column(Integer, default=0)
     phone_verification_code = Column(String(5))
     is_phone_verified = Column(Boolean, default=False)
     role = Column(Enum(UserRoleEnum), nullable=False, server_default="user")

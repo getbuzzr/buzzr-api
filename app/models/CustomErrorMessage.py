@@ -2,6 +2,10 @@ import enum
 import json
 
 
+class UserErrorMessageEnum(str, enum.Enum):
+    ALREADY_REFFERED = "ALREADY_REFFERED"
+
+
 class AddressErrorMessageEnum(str, enum.Enum):
     NO_ADDRESS_FOUND = "NO_ADDRESS_FOUND"
     USER_HAS_NO_ADDRESS = "USER_HAS_NO_ADDRESS"
