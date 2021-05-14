@@ -79,7 +79,6 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
         if session.query(Order).filter_by(user_id=user.id).count() == 1:
             referrer = session.query(User).get(user.referrer_id)
             referrer.credit += 500
-            user.is_referrer_rewarded = True
     # subtract credit form user if credit was used
     if order.credit_used > 0:
         user.credit -= order.credit_used
