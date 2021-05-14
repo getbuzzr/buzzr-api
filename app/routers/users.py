@@ -75,7 +75,7 @@ def add_user_phone(user_phone_number_put: UserPhoneNumberPut, current_user: User
                             "Phone number not valid")
     verification_code = ''.join(random.sample('0123456789', 5))
     current_user.phone_number = phone_number
-    current_user.country_code = country_code
+    current_user.phone_country_code = country_code
     current_user.phone_verification_code = verification_code
     client = boto3.client('sns')
     # send sms
