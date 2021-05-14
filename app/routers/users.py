@@ -68,7 +68,7 @@ def edit_user(user_put_body: UserSchemaPut, current_user: User = Depends(get_cur
 @router.put('/add_phone_number')
 def add_user_phone(user_phone_number_put: UserPhoneNumberPut, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     phone_number = user_phone_number_put.phone_number
-    country_code = user_phone_number_put.country_code
+    country_code = user_phone_number_put.phone_country_code
     full_phone = f"+{country_code}{phone_number}"
     if validate_phone_number(full_phone) == False:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,

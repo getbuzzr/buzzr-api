@@ -32,7 +32,7 @@ class UserSchemaPut(BaseModel):
 
 class UserPhoneNumberPut(BaseModel):
     phone_number: str
-    country_code: str
+    phone_country_code: str
 
 
 class UserSchemaOut(BaseModel):
