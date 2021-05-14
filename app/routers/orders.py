@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import or_, and_
 # Models
 from models.Order import Order, OrderStatusEnum
 from models.User import User
@@ -79,11 +80,12 @@ def get_order_id(order_id: int, current_user: User = Depends(get_current_user), 
 
 @router.put('/{order_id}/feedback')
 def put_order_feedback(new_order_feedback: OrderFeedbackSchemaIn, order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
-    order = session.query(Order).filter_by(
-        user_id=current_user.id, id=order_id, status=OrderStatusEnum.complete).first()
+    order = session.query(Order).filter(
+        and_(Order.user_id == current_user.id, Order.id == order_id)).filter(Order.status.in_([OrderStatusEnum.failed, OrderStatusEnum.complete])).first()
     if order is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                            "order doesnt exist or you do not have acecess")
+                            CustomErrorMessage(
+                                OrderErrorMessageEnum.NO_FEEDBACK_ALLOWED, error_message="Cant leave feedback for offer", error_detail="This is not the user's order or order doesnt have failed/complete status").jsonify())
     order.feedback = new_order_feedback.feedback
     order.stars = new_order_feedback.stars
     session.commit()
@@ -113,6 +115,10 @@ def put_order_tip(new_order_tip: OrderTipEditSchemaIn, order_id: int, current_us
 
 @router.post('', response_model=OrderSchemaCreateOut)
 def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    if current_user.is_phone_verified is False:
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            CustomErrorMessage(
+                                OrderErrorMessageEnum.PHONE_NOT_VERIFIED, error_message="User phone number not verified", error_detail="User's phone must be verified before they place an order").jsonify())
     # make sure order has one of address/lat/lng
     if order.address_id is None and order.latitude is None and (order.longitude is None or order.latitude is None):
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
