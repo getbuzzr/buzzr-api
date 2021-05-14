@@ -32,7 +32,7 @@ class UserSchemaPut(BaseModel):
 
 class UserPhoneNumberPut(BaseModel):
     phone_number: str
-    country_code:str
+    country_code: str
 
 
 class UserSchemaOut(BaseModel):
@@ -51,6 +51,7 @@ class UserSchemaOut(BaseModel):
     phone_verification_code: Optional[str]
     is_phone_verified: Optional[bool]
     credit: int
+    phone_country_code: Optional[str]
 
 
 class UserPaymentCardAddress(BaseModel):
