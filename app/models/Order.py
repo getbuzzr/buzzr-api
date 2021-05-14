@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship, backref
 import enum
 
 
-class StarRatingEnum(str, enum.Enum):
+class StarRatingEnum(int, enum.Enum):
     one = 1
     two = 2
     three = 3
