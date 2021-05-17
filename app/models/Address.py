@@ -45,3 +45,4 @@ class Address(Base):
     last_login = Column(DateTime, default=datetime.datetime.utcnow)
     orders = relationship(
         'Order', backref=backref('address'))
+    is_serviceable = Column(Boolean, default=False)

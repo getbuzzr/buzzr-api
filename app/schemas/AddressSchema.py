@@ -58,3 +58,4 @@ class AddressSchemaOut(BaseModel):
     delivery_preference: DeliveryPreferenceEnum
     latitude: float
     longitude: float
+    is_serviceable: bool

@@ -42,7 +42,7 @@ class User(Base):
     stripe_id = Column(String(20))
     credit = Column(Integer, default=0)
     phone_verification_code = Column(String(5))
-    is_phone_verified = Column(Boolean, default=False)
+    is_phone_verified = Column(Boolean)
     role = Column(Enum(UserRoleEnum), nullable=False, server_default="user")
     favorite_products = relationship(
         'Product', secondary=favorite_products, backref=backref('favorited_by'))
