@@ -20,7 +20,7 @@ router = APIRouter()
 
 
 def is_address_valid(new_address):
-    """Checks with google maps to see if this address is valid
+    """Checks with google maps to see if this address is valid. This is done via LAT/LNG
 
     Args:
         new_address ([Address]): Address to check
@@ -120,9 +120,10 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
     if check_address_exists(new_address, user_addresses):
         raise HTTPException(status.HTTP_409_CONFLICT,
                             "This address already exists")
-    if not is_address_valid(new_address):
-        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
-                            "Address non existant/too far away")
+    if is_address_valid(new_address):
+        new_address.is_serviceable = True
+    else:
+        new_address.is_servicable = False
     # check to see if default address already exists
     try:
         default_address = [x for x in user_addresses if x.is_default][0]

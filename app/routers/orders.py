@@ -131,10 +131,15 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         session.delete(preexisting_order)
     # if address is specified, check if it exists
     if order.address_id:
-        if session.query(Address).get(order.address_id) is None:
+        address_delievered_to = session.query(Address).get(order.address_id)
+        if address_delievered_to is None:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 CustomErrorMessage(
                                     OrderErrorMessageEnum.ADDRESS_DOESNT_EXIST, error_message="Address doesnt exist").jsonify())
+        if address_delievered_to.is_serviceable == False:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                CustomErrorMessage(
+                                    OrderErrorMessageEnum.ADDRESS_NOT_SERVICALBLE, error_message="Must deliver to serviceable address").jsonify())
     # check to see if the address exists
     # calculate cost and tax amount
     total_cost = 0
