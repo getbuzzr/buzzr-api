@@ -52,6 +52,7 @@ class UserSchemaOut(BaseModel):
     is_phone_verified: Optional[bool]
     credit: int
     phone_country_code: Optional[str]
+    referral_code: str
 
 
 class UserPaymentCardAddress(BaseModel):
