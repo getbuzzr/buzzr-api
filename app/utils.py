@@ -83,7 +83,8 @@ def get_parameter_from_ssm(path):
             WithDecryption=True)['Parameter']['Value']
         return parameter_value
     except Exception as e:
-        return None
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            "Server has no ssm permission")
 
 
 def generate_apple_order_push_payload(title, body, order_status):

@@ -12,7 +12,7 @@ from models.StripeApiClient import StripeApiClient
 from models.SlackWebhookClient import SlackWebhookClient
 from models.CustomErrorMessage import OrderErrorMessageEnum, CustomErrorMessage
 from models.Address import Address
-
+from utils import get_parameter_from_ssm
 # routers
 from routers.addresses import calculate_address_delivery_fee
 # Schemas
@@ -124,6 +124,17 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             CustomErrorMessage(
                                 OrderErrorMessageEnum.ADDRESS_LAT_LNG_NOT_PRESENT, error_message="Order must have address of lat/lng").jsonify())
+    # check to see if store is open
+    if get_parameter_from_ssm('is_store_open') == "false":
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            CustomErrorMessage(
+                                OrderErrorMessageEnum.STORE_NOT_OPEN, error_message="Store is not open").jsonify())
+    current_order_count = session.query(Order).filter(
+        Order.status.in_([OrderStatusEnum.preparing, OrderStatusEnum.paid, OrderStatusEnum.out_for_delivery, OrderStatusEnum.delivered])).count()
+    if current_order_count > int(get_parameter_from_ssm('num_riders_working')):
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            CustomErrorMessage(
+                                OrderErrorMessageEnum.MAX_ORDERS_REACHED, error_message="We are currently too busy").jsonify())
     # check if user already has order in "checking out"
     preexisting_order = session.query(Order).filter_by(
         status=OrderStatusEnum.checking_out, user_id=current_user.id).first()
@@ -139,7 +150,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         if address_delievered_to.is_serviceable == False:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 CustomErrorMessage(
-                                    OrderErrorMessageEnum.ADDRESS_NOT_SERVICALBLE, error_message="Must deliver to serviceable address").jsonify())
+                                    OrderErrorMessageEnum.ADDRESS_NOT_SERVICEABLE, error_message="Must deliver to serviceable address").jsonify())
     # check to see if the address exists
     # calculate cost and tax amount
     total_cost = 0

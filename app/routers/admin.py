@@ -13,16 +13,18 @@ from models.ProductOrdered import ProductOrdered
 from models.SlackWebhookClient import SlackWebhookClient
 import datetime
 # Schemas
-from schemas.OrderSchema import AdminOrderStatusSchemaEdit, OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, AdminOrderSchemaEdit
+from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut
+from schemas.AdminSchema import AdminOrderStatusSchemaEdit, AdminOrderSchemaEdit, StoreOpenSchema, NumRidersSchema
 # Auth
 from auth import get_current_user, is_admin
 from utils import serialize, send_push_sns, generate_apple_order_push_payload
 # utils
 from database import get_db
+import boto3
 router = APIRouter()
 
 
-@router.get('/orders', response_model=List[OrderSchemaOut])
+@router.get('/orders', response_model=List[OrderSchemaOut], include_in_schema=False)
 @is_admin
 def get_orders(status: str = None, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     if status:
@@ -41,7 +43,7 @@ def get_orders(status: str = None, current_user: User = Depends(get_current_user
     return orders_to_return
 
 
-@router.post('/orders/stripe_charge')
+@router.post('/orders/stripe_charge', include_in_schema=False)
 async def put_stripe_order(request: Request, session: Session = Depends(get_db)):
     endpoint_secret = os.environ['STRIPE_WEBHOOK_TOKEN']
     payload = await request.body()
@@ -89,7 +91,7 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
     return status.HTTP_200_OK
 
 
-@router.put('/orders/{order_id}/status')
+@router.put('/orders/{order_id}/status', include_in_schema=False)
 def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit, order_id: int, session: Session = Depends(get_db)):
     # allows retool to make post
     retool_auth_key = os.environ['RETOOL_AUTH_KEY']
@@ -126,4 +128,50 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
     elif order.status.value == "complete":
         edited_order.date_complete = datetime_now
     session.commit()
+    return status.HTTP_200_OK
+
+
+@router.put('/change_rider_numbers', include_in_schema=False)
+def change_rider_numbers(request: Request, riders: NumRidersSchema, session: Session = Depends(get_db)):
+    # allows retool to make post
+    retool_auth_key = os.environ['RETOOL_AUTH_KEY']
+    retool_key = request.headers['retool-auth-key']
+    if retool_auth_key != retool_key:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
+    client = boto3.client('ssm', region_name="us-east-1")
+    try:
+        parameter_value = client.put_parameter(
+            Name='num_riders_working',
+            Overwrite=True,
+            Value=str(riders.num_riders))
+        return parameter_value
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            "Server has no ssm permission")
+    return status.HTTP_200_OK
+
+
+@router.put('/change_store_open', include_in_schema=False)
+def change_store_open(request: Request, store_open: StoreOpenSchema, session: Session = Depends(get_db)):
+    # allows retool to make post
+    retool_auth_key = os.environ['RETOOL_AUTH_KEY']
+    retool_key = request.headers['retool-auth-key']
+    if retool_auth_key != retool_key:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
+    client = boto3.client('ssm', region_name="us-east-1")
+    if store_open.is_store_open:
+        store_open = "true"
+    else:
+        store_open = "false"
+    try:
+        parameter_value = client.put_parameter(
+            Name='is_store_open',
+            Overwrite=True,
+            Value=store_open)
+        return parameter_value
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            "Server has no ssm permission")
     return status.HTTP_200_OK

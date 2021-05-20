@@ -31,16 +31,6 @@ class OrderTipEditSchemaOut(BaseModel):
     stripe_customer_id: str
 
 
-class AdminOrderSchemaEdit(BaseModel):
-    products_ordered: Optional[conlist(ProductOrderSchemaIn, min_items=1)]
-    cost: Optional[int]
-    status: Optional[OrderStatusEnum]
-
-
-class AdminOrderStatusSchemaEdit(BaseModel):
-    status: OrderStatusEnum
-
-
 class OrderSchemaCreateOut(BaseModel):
     """This schema is used to validate User api endpoint
     """
