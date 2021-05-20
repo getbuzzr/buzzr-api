@@ -7,7 +7,7 @@ import os
 import json
 # Models
 from models.Order import Order, OrderStatusEnum
-from models.User import User
+from models.User import User, REFERRAL_USER_CREDIT
 from models.Product import Product
 from models.ProductOrdered import ProductOrdered
 from models.SlackWebhookClient import SlackWebhookClient
@@ -78,7 +78,7 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
         # only reward if its first purchase
         if session.query(Order).filter_by(user_id=user.id).count() == 1:
             referrer = session.query(User).get(user.referrer_id)
-            referrer.credit += 500
+            referrer.credit += REFERRAL_USER_CREDIT
     # subtract credit form user if credit was used
     if order.credit_used > 0:
         user.credit -= order.credit_used

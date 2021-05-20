@@ -46,3 +46,5 @@ class Address(Base):
     orders = relationship(
         'Order', backref=backref('address'))
     is_serviceable = Column(Boolean, default=False)
+    seconds_away_from_hq = Column(Integer)
+    google_share_url = Column(String(250))

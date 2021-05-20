@@ -16,11 +16,15 @@ from database import get_db
 import requests
 import os
 import json
+import urllib.parse
 router = APIRouter()
 
 
-def is_address_valid(new_address):
-    """Checks with google maps to see if this address is valid. This is done via LAT/LNG
+MAX_TIME_SECONDS = 420
+
+
+def get_seconds_away_from_hq(new_address):
+    """Checks with google maps to see if this address is valid.If it is, return seconds
 
     Args:
         new_address ([Address]): Address to check
@@ -28,7 +32,6 @@ def is_address_valid(new_address):
     COMPANY_ADDRESS_LATITUDE = 49.276567
     COMPANY_ADDRESS_LONGITUDE = -123.119116
     GOOGLE_MAPS_API_KEY = os.environ['GOOGLE_MAPS_API_KEY']
-    MAX_TIME_SECONDS = 420
     try:
         google_maps_request = requests.get(
             f'https://maps.googleapis.com/maps/api/directions/json?origin={COMPANY_ADDRESS_LATITUDE},{COMPANY_ADDRESS_LONGITUDE}&destination={new_address.latitude},{new_address.longitude}&key={GOOGLE_MAPS_API_KEY}&mode=bicycling').json()
@@ -42,9 +45,13 @@ def is_address_valid(new_address):
         raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
                             "lat/lng not a valid location")
 
-    if time_seconds < MAX_TIME_SECONDS:
-        return True
-    return False
+    return time_seconds
+
+
+def generate_google_maps_share_url(address):
+    address_string = urllib.parse.quote_plus(
+        f"{address.street_address},{address.city},{address.province},{address.country},{address.postal_code}")
+    return f"http://google.com/maps/dir/?api=1&destination={address_string}&travelmode=bicycling"
 
 
 def calculate_address_delivery_fee(address_id):
@@ -120,7 +127,10 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
     if check_address_exists(new_address, user_addresses):
         raise HTTPException(status.HTTP_409_CONFLICT,
                             "This address already exists")
-    if is_address_valid(new_address):
+    new_address.google_share_url = generate_google_maps_share_url(new_address)
+    seconds_away_from_hq = get_seconds_away_from_hq(new_address)
+    new_address.seconds_away_from_hq = seconds_away_from_hq
+    if seconds_away_from_hq < MAX_TIME_SECONDS:
         new_address.is_serviceable = True
     else:
         new_address.is_servicable = False
@@ -165,12 +175,20 @@ def put_address(address_put: AddressSchemaPut, address_id: int, current_user: Us
         if current_default_address:
             current_default_address.is_default = False
             session.add(current_default_address)
+
     for key, value in address_put.dict().items():
         # If key is being edited
         if value is not None:
             setattr(address_to_edit, key, value)
-    if not is_address_valid(address_to_edit):
-        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
-                            "Address too far away")
+    #  If user has changed location, we must update google share url/ is_servicable
+    if address_put.latitude:
+        seconds_away_from_hq = get_seconds_away_from_hq(address_put)
+        address_to_edit.seconds_away_from_hq = seconds_away_from_hq
+        if seconds_away_from_hq < MAX_TIME_SECONDS:
+            address_to_edit.is_serviceable = True
+        else:
+            address_to_edit.is_servicable = False
+        address_to_edit.google_share_url = generate_google_maps_share_url(
+            address_put)
     session.commit()
     return serialize(address_to_edit)

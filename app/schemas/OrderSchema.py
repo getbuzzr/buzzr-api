@@ -78,6 +78,7 @@ class OrderSchemaOut(BaseModel):
     tax_charge: int
     delivery_charge: int
     subtotal: int
+    credit_used: int
 
 
 class OrderFeedbackSchemaIn(BaseModel):

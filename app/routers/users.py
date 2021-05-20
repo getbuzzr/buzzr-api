@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from schemas.UserSchema import UserSchemaOut, UserSchemaIn, UserSchemaPut, UserPhoneNumberPut, UserPaymentMethods, ReferralCodeIn
 from schemas.FileSchema import PictureSchemaIn, S3PresignedUrlSchemaOut
 # Models
-from models.User import User, UserRoleEnum
+from models.User import User, UserRoleEnum, REFERRAL_USER_CREDIT
 from models.S3StaticFileClient import S3StaticFileClient
 from models.CustomErrorMessage import UserErrorMessageEnum, CustomErrorMessage
 # Auth
@@ -36,7 +36,7 @@ def post_referral_code(referral_code: ReferralCodeIn, current_user: User = Depen
     if referring_user is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND)
     current_user.referring_user = referring_user.id
-    current_user.credit = 500
+    current_user.credit = REFERRAL_USER_CREDIT
     session.commit()
     return status.HTTP_200_OK
 
