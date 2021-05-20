@@ -6,6 +6,8 @@ from sqlalchemy.orm import relationship, backref
 import enum
 from uuid import uuid4
 
+REFERRAL_USER_CREDIT = 500
+
 favorite_products = Table('favorite_products', Base.metadata,
                           Column(
                               'product_id', Integer, ForeignKey('product.id')),
