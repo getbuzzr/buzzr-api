@@ -13,3 +13,4 @@ from . import SlackWebhookClient
 from . import PopularSearch
 from . import ProductSuggestions
 from . import CustomErrorMessage
+from . import Rider

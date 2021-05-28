@@ -58,3 +58,5 @@ class Order(Base):
     delivery_charge = Column(Integer)
     tax_charge = Column(Integer)
     credit_used = Column(Integer)
+    rider_assigned_id = Column(Integer, ForeignKey('rider.id'), nullable=True)
+    rider_assigned = relationship("Rider", back_populates="orders")
