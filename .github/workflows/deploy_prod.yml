@@ -22,7 +22,7 @@ jobs:
           aws-access-key-id: ${{ secrets.CICD_AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.CICD_AWS_SECRET }}
           role-to-assume: arn:aws:iam::980636768267:role/cicd_role
-          role-session-name: cicd-dev
+          role-session-name: cicd-prod
           aws-region: us-east-1
           role-duration-seconds: 1200
 
@@ -52,5 +52,5 @@ jobs:
 
       - name: update elasticbeanstalk application
         run: |
-          aws elasticbeanstalk create-application-version --application-name ${{ env.ELB_APPLICATION_NAME }} --version-label ${GITHUB_SHA}  --source-bundle S3Bucket="buzzr-elb-deploy-dev",S3Key="docker_deploy_${{ github.sha }}.zip" --auto-create-application
+          aws elasticbeanstalk create-application-version --application-name ${{ env.ELB_APPLICATION_NAME }} --version-label ${GITHUB_SHA}  --source-bundle S3Bucket="buzzr-elb-deploy-prod",S3Key="docker_deploy_${{ github.sha }}.zip" --auto-create-application
           aws elasticbeanstalk update-environment --application-name ${{ env.ELB_APPLICATION_NAME }} --environment-name ${{ env.ELB_ENVIRONMENT_NAME }} --version-label ${GITHUB_SHA}
