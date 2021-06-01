@@ -1,5 +1,5 @@
 # workflow only runs on push
-name: Terraform apply
+name: deploy dev
 # Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
