@@ -238,11 +238,12 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             'stripe_ephemeral_key': stripe_ephemeral_key.secret if stripe_ephemeral_key else None,
             'credit_used': credit_used}
 
-# This function is only used when an order created costs 0 dollars because all credit is used
-
 
 @router.put('/{order_id}/confirm')
 def post_orders(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    """This function is only used when a user has more credit then cost. 
+    In this case we completely forego stripe and use all of the customer's credit
+    """
     targeted_order = session.query(Order).filter_by(
         cost=0, user_id=current_user.id, status=OrderStatusEnum.checking_out).filter(Order.credit_used > 0).first()
     if targeted_order is None:
