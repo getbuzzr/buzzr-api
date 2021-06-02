@@ -27,9 +27,9 @@ MAX_TIME_SECONDS = 420
 def location_is_serviceable(latitude: float, longitude: float, current_user: User = Depends(get_current_user)):
     seconds_away_from_hq = get_seconds_away_from_hq(latitude, longitude)
     if seconds_away_from_hq < MAX_TIME_SECONDS:
-        return json.dumps({"is_serviceable": True})
+        return {"is_serviceable": True}
     else:
-        return json.dumps({"is_serviceable": False})
+        return {"is_serviceable": False}
 
 
 def get_seconds_away_from_hq(latitude, longitude):
