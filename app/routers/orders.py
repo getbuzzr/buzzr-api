@@ -19,10 +19,10 @@ from routers.addresses import calculate_address_delivery_fee
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, OrderTipEditSchemaIn,  OrderFeedbackSchemaIn
 # Auth
 from auth import get_current_user
-from utils import serialize
+from utils import serialize, send_push_sns, generate_apple_order_push_payload
 # utils
 from database import get_db
-
+import datetime
 import json
 
 router = APIRouter()
@@ -237,3 +237,31 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             'stripe_customer_id': current_user.stripe_id,
             'stripe_ephemeral_key': stripe_ephemeral_key.secret if stripe_ephemeral_key else None,
             'credit_used': credit_used}
+
+
+@router.put('/{order_id}/confirm')
+def post_orders(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    """This function is only used when a user has more credit then cost. 
+    In this case we completely forego stripe and use all of the customer's credit
+    """
+    targeted_order = session.query(Order).filter_by(
+        cost=0, user_id=current_user.id, status=OrderStatusEnum.checking_out).filter(Order.credit_used > 0).first()
+    if targeted_order is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            CustomErrorMessage(
+                                OrderErrorMessageEnum.NO_CREDIT_ORDER_FOUND, error_message="Order completely paid in credit not found", error_detail="We cant find an order that the user made that was completely paid in credit").jsonify())
+    # change status, remove credit, generate slack, write push
+    datetime_now = datetime.datetime.utcnow()
+    targeted_order.status = OrderStatusEnum.paid
+    current_user.credit -= targeted_order.credit_used
+    if current_user.apn_token:
+        send_push_sns(current_user.apn_token, "ios",
+                      generate_apple_order_push_payload("Thank you for your order", f"Your order #{order.id} has been processed", OrderStatusEnum.paid))
+    if current_user.fcm_token:
+        send_push_sns(current_user.fcm_token, "android",
+                      "Your Order has been successfully paid for. Our team will begin preparing your order shortly")
+    targeted_order.date_paid = datetime_now
+    session.commit()
+    SlackWebhookClient().post_delivery(targeted_order.id, targeted_order.user.id, targeted_order.address,
+                                       f"{current_user.first_name} {current_user.last_name}", targeted_order.products_ordered)
+    return status.HTTP_200_OK
