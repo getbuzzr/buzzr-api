@@ -23,7 +23,16 @@ router = APIRouter()
 MAX_TIME_SECONDS = 420
 
 
-def get_seconds_away_from_hq(new_address):
+@router.get('/location_is_serviceable', current_user: User=Depends(get_current_user))
+def location_is_serviceable(latitude: float, longitude: float,):
+    seconds_away_from_hq = get_seconds_away_from_hq(latitude, longitude)
+    if seconds_away_from_hq < MAX_TIME_SECONDS:
+        return json.dumps({"is_serviceable": True})
+    else:
+        return json.dumps({"is_serviceable": False})
+
+
+def get_seconds_away_from_hq(latitude, longitude):
     """Checks with google maps to see if this address is valid.If it is, return seconds
 
     Args:
@@ -34,7 +43,7 @@ def get_seconds_away_from_hq(new_address):
     GOOGLE_MAPS_API_KEY = os.environ['GOOGLE_MAPS_API_KEY']
     try:
         google_maps_request = requests.get(
-            f'https://maps.googleapis.com/maps/api/directions/json?origin={COMPANY_ADDRESS_LATITUDE},{COMPANY_ADDRESS_LONGITUDE}&destination={new_address.latitude},{new_address.longitude}&key={GOOGLE_MAPS_API_KEY}&mode=bicycling').json()
+            f'https://maps.googleapis.com/maps/api/directions/json?origin={COMPANY_ADDRESS_LATITUDE},{COMPANY_ADDRESS_LONGITUDE}&destination={latitude},{longitude}&key={GOOGLE_MAPS_API_KEY}&mode=bicycling').json()
     except Exception as e:
         logging.error(
             f"Google server error: Request:{google_maps_request} Error: {e}")
@@ -128,7 +137,8 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
         raise HTTPException(status.HTTP_409_CONFLICT,
                             "This address already exists")
     new_address.google_share_url = generate_google_maps_share_url(new_address)
-    seconds_away_from_hq = get_seconds_away_from_hq(new_address)
+    seconds_away_from_hq = get_seconds_away_from_hq(
+        new_address.latitude, new_address.longitude)
     new_address.seconds_away_from_hq = seconds_away_from_hq
     if seconds_away_from_hq < MAX_TIME_SECONDS:
         new_address.is_serviceable = True
@@ -182,7 +192,8 @@ def put_address(address_put: AddressSchemaPut, address_id: int, current_user: Us
             setattr(address_to_edit, key, value)
     #  If user has changed location, we must update google share url/ is_servicable
     if address_put.latitude:
-        seconds_away_from_hq = get_seconds_away_from_hq(address_put)
+        seconds_away_from_hq = get_seconds_away_from_hq(
+            address_put.latitude, address_put.longitude)
         address_to_edit.seconds_away_from_hq = seconds_away_from_hq
         if seconds_away_from_hq < MAX_TIME_SECONDS:
             address_to_edit.is_serviceable = True

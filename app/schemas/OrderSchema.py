@@ -34,7 +34,7 @@ class OrderTipEditSchemaOut(BaseModel):
 class OrderSchemaCreateOut(BaseModel):
     """This schema is used to validate User api endpoint
     """
-    cost: float
+    cost: int
     id: int
     stripe_payment_intent_secret: str
     tax_charge: int
