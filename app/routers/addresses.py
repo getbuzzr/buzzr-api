@@ -23,8 +23,8 @@ router = APIRouter()
 MAX_TIME_SECONDS = 420
 
 
-@router.get('/location_is_serviceable', current_user: User=Depends(get_current_user))
-def location_is_serviceable(latitude: float, longitude: float,):
+@router.get('/location_is_serviceable')
+def location_is_serviceable(latitude: float, longitude: float, current_user: User = Depends(get_current_user)):
     seconds_away_from_hq = get_seconds_away_from_hq(latitude, longitude)
     if seconds_away_from_hq < MAX_TIME_SECONDS:
         return json.dumps({"is_serviceable": True})
@@ -144,6 +144,10 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
         new_address.is_serviceable = True
     else:
         new_address.is_servicable = False
+        # check to make sure that the new address is not set as default
+        if new_address.is_default:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, CustomErrorMessage(
+                AddressErrorMessageEnum.DEFAULT_NOT_SERVICEABLE, error_message="A non serviceable address cannot be set as default").jsonify())
     # check to see if default address already exists
     try:
         default_address = [x for x in user_addresses if x.is_default][0]
@@ -157,7 +161,7 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
             session.add(default_address)
         new_address.is_default = True
     else:
-        if default_address is None:
+        if default_address is None and new_address.is_serviceable == True:
             new_address.is_default = True
     session.add(new_address)
     session.commit()

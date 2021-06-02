@@ -24,7 +24,7 @@ class OrderTipEditSchemaIn(BaseModel):
 
 
 class OrderTipEditSchemaOut(BaseModel):
-    stripe_payment_intent_secret:  str
+    stripe_payment_intent_secret:  Optional[str]
     cost: int
     id: int
     stripe_ephemeral_key: str
@@ -36,7 +36,7 @@ class OrderSchemaCreateOut(BaseModel):
     """
     cost: int
     id: int
-    stripe_payment_intent_secret: str
+    stripe_payment_intent_secret: Optional[str]
     tax_charge: int
     delivery_charge: int
     tip_amount: int
