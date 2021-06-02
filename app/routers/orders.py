@@ -16,7 +16,7 @@ from utils import get_parameter_from_ssm
 # routers
 from routers.addresses import calculate_address_delivery_fee
 # Schemas
-from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, OrderTipEditSchemaIn, OrderTipEditSchemaOut, OrderFeedbackSchemaIn
+from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, OrderTipEditSchemaIn,  OrderFeedbackSchemaIn
 # Auth
 from auth import get_current_user
 from utils import serialize
@@ -192,18 +192,25 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     credit_used = 0
     if current_user.credit > 0:
         if current_user.credit > total_cost:
+            credit_used = total_cost
             total_cost = 0
-            credit_used = current_user.credit - total_cost
         else:
             total_cost -= current_user.credit
             credit_used = current_user.credit
-    payment_intent = StripeApiClient('cad').generate_payment_intent(
-        current_user.stripe_id, total_cost)
-    stripe_ephemeral_key = StripeApiClient('cad').generate_ephemeral_key(
-        current_user.stripe_id)
+    # If credit is larger then cost, dont return payment_intent/stripe ephemeral key
+    if total_cost == 0:
+        payment_intent = None
+        stripe_ephemeral_key = None
+    else:
+        payment_intent = StripeApiClient('cad').generate_payment_intent(
+            current_user.stripe_id, total_cost)
+        stripe_ephemeral_key = StripeApiClient('cad').generate_ephemeral_key(
+            current_user.stripe_id)
     # create new order
     new_order = Order(user_id=current_user.id, cost=total_cost, delivery_charge=delivery_fee, tax_charge=total_tax,
-                      status=OrderStatusEnum.checking_out, stripe_payment_intent=payment_intent.id, tip_amount=order.tip_amount, subtotal=subtotal, credit_used=credit_used)
+                      status=OrderStatusEnum.checking_out, tip_amount=order.tip_amount, subtotal=subtotal, credit_used=credit_used)
+    if payment_intent:
+        new_order.stripe_payment_intent = payment_intent.id
     # if order is associated with the address
     if order.address_id:
         new_order.address_id = order.address_id
@@ -220,4 +227,13 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             order_id=new_order.id, product_id=ordered_product.product_id, quantity=ordered_product.quantity))
     session.bulk_save_objects(products_ordered_create)
     session.commit()
-    return {"id": new_order.id, "cost":  new_order.cost, "subtotal": subtotal, "tip_amount": order.tip_amount, "tax_charge": total_tax, "delivery_charge": delivery_fee, "stripe_payment_intent_secret": payment_intent.client_secret, 'stripe_customer_id': current_user.stripe_id, 'stripe_ephemeral_key': stripe_ephemeral_key.secret, 'credit_used': credit_used}
+    return {"id": new_order.id,
+            "cost":  new_order.cost,
+            "subtotal": subtotal,
+            "tip_amount": order.tip_amount,
+            "tax_charge": total_tax,
+            "delivery_charge": delivery_fee,
+            "stripe_payment_intent_secret": new_order.stripe_payment_intent if new_order.stripe_payment_intent else None,
+            'stripe_customer_id': current_user.stripe_id,
+            'stripe_ephemeral_key': stripe_ephemeral_key.secret if stripe_ephemeral_key else None,
+            'credit_used': credit_used}

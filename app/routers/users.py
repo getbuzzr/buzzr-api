@@ -17,6 +17,8 @@ from utils import validate_phone_number
 import boto3
 import random
 from models.StripeApiClient import StripeApiClient
+from twilio.rest import Client
+import os
 router = APIRouter()
 
 
@@ -77,13 +79,19 @@ def add_user_phone(user_phone_number_put: UserPhoneNumberPut, current_user: User
     current_user.phone_number = phone_number
     current_user.phone_country_code = country_code
     current_user.phone_verification_code = verification_code
-    client = boto3.client('sns')
+    account_sid = os.environ['TWILIO_ACCOUNT_SID']
+    auth_token = os.environ['TWILIO_AUTH_TOKEN']
+    client = Client(account_sid, auth_token)
     # send sms
     try:
-        message = client.publish(PhoneNumber=full_phone,
-                                 Message=f"Your Buzzr verification code is {verification_code}")
+        message = client.messages \
+            .create(
+                body=f"Your Buzzr verification code is {verification_code}",
+                from_='+17786522895',
+                to=full_phone
+            )
     except Exception as e:
-        logging.error(f'Exception sending sms')
+        logging.error(f'Exception sending sms {e}')
         raise HTTPException(
             status.HTTP_500_INTERNAL_SERVER_ERROR, "Couldnt send sms")
     session.commit()

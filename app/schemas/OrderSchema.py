@@ -23,14 +23,6 @@ class OrderTipEditSchemaIn(BaseModel):
     tip_amount: int
 
 
-class OrderTipEditSchemaOut(BaseModel):
-    stripe_payment_intent_secret:  Optional[str]
-    cost: int
-    id: int
-    stripe_ephemeral_key: str
-    stripe_customer_id: str
-
-
 class OrderSchemaCreateOut(BaseModel):
     """This schema is used to validate User api endpoint
     """
@@ -41,7 +33,7 @@ class OrderSchemaCreateOut(BaseModel):
     delivery_charge: int
     tip_amount: int
     subtotal: int
-    stripe_ephemeral_key: str
+    stripe_ephemeral_key: Optional[str]
     stripe_customer_id: str
     credit_used: int
 
