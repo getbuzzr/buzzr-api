@@ -145,7 +145,7 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
     else:
         new_address.is_servicable = False
         # check to make sure that the new address is not set as default
-        if new_address.is_default:
+        if post_address.is_default:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, CustomErrorMessage(
                 AddressErrorMessageEnum.DEFAULT_NOT_SERVICEABLE, error_message="A non serviceable address cannot be set as default").jsonify())
     # check to see if default address already exists
@@ -161,8 +161,12 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
             session.add(default_address)
         new_address.is_default = True
     else:
+        # if there is a no default address currently set, make sure the address is
+        # serviceable before making it default
         if default_address is None and new_address.is_serviceable == True:
             new_address.is_default = True
+        else:
+            new_address.is_default = False
     session.add(new_address)
     session.commit()
     return serialize(new_address)
