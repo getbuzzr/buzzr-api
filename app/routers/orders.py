@@ -131,7 +131,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
                                 OrderErrorMessageEnum.STORE_NOT_OPEN, error_message="Store is not open").jsonify())
     current_order_count = session.query(Order).filter(
         Order.status.in_([OrderStatusEnum.preparing, OrderStatusEnum.paid, OrderStatusEnum.out_for_delivery, OrderStatusEnum.delivered])).count()
-    if current_order_count > int(get_parameter_from_ssm('num_riders_working')):
+    if current_order_count >= int(get_parameter_from_ssm('num_riders_working')):
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             CustomErrorMessage(
                                 OrderErrorMessageEnum.MAX_ORDERS_REACHED, error_message="We are currently too busy").jsonify())
