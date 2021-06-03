@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Table, Boolean, Enum
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Table, Boolean, Enum, SmallInteger
 from database import Base
 import logging
 import datetime
@@ -45,10 +45,11 @@ class Product(Base):
     tax = Column(Float, default=0)
     percent_discount = Column(Integer, default=0)
     image_url = Column(String(300))
+    shelf_number = Column(SmallInteger)
     unit = Column(
         Enum(ProductUnitEnum), server_default="weight")
     status = Column(
-        Enum(ProductStatusEnum),server_default=("active"))
+        Enum(ProductStatusEnum), server_default=("active"))
     tags = relationship(
         'ProductTag', secondary=product_tags, backref=backref('product'))
     product_ordered = relationship(

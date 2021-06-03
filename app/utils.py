@@ -128,9 +128,9 @@ def send_push_sns(device_id, device_type, body):
         )
         endpoint_arn = endpoint_response['EndpointArn']
     except Exception as e:
+        # case where user disabled endpoint response
         logging.error(e)
-        raise HTTPException(
-            status.HTTP_500_INTERNAL_SERVER_ERROR, "Couldnt create endpoint response")
+        return
 
     publish_result = client.publish(
         TargetArn=endpoint_arn,
