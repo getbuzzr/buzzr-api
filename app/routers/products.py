@@ -7,7 +7,7 @@ from sqlalchemy import and_
 from models.Product import Product, product_tags
 from models.User import User
 # schemas
-from schemas.ProductSchema import ProductSchemaOut, ProductTags
+from schemas.ProductSchema import ProductSchemaOut, ProductTags, ProductStatusEnum
 # Auth
 from auth import get_current_user
 from utils import serialize
@@ -74,5 +74,5 @@ def get_related(product_id: int, session: Session = Depends(get_db)):
     tag_ids = [x.id for x in product.tags]
     # get all products with same tags but not same product id
     related_items = session.query(Product).join(product_tags).filter(and_(
-        product_tags.c.tag_id.in_(tag_ids), product_tags.c.product_id != product_id)).all()
+        product_tags.c.tag_id.in_(tag_ids), product_tags.c.product_id != product_id, Product.status == ProductStatusEnum.active)).all()
     return [serialize(x) for x in related_items]

@@ -233,7 +233,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             "tip_amount": order.tip_amount,
             "tax_charge": total_tax,
             "delivery_charge": delivery_fee,
-            "stripe_payment_intent_secret": new_order.stripe_payment_intent if new_order.stripe_payment_intent else None,
+            "stripe_payment_intent_secret": payment_intent.client_secret if payment_intent else None,
             'stripe_customer_id': current_user.stripe_id,
             'stripe_ephemeral_key': stripe_ephemeral_key.secret if stripe_ephemeral_key else None,
             'credit_used': credit_used}
