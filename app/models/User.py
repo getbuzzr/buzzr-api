@@ -15,6 +15,13 @@ favorite_products = Table('favorite_products', Base.metadata,
                           Column('date_created', DateTime,
                                  default=datetime.datetime.utcnow))
 
+coupons_redeemed = Table('coupons_redeemed', Base.metadata,
+                         Column(
+                             'coupon_id', Integer, ForeignKey('coupon.id')),
+                         Column('user_id', Integer, ForeignKey('user.id')),
+                         Column('date_redeemed', DateTime,
+                                default=datetime.datetime.utcnow))
+
 
 class UserRoleEnum(str, enum.Enum):
     admin = "admin"
@@ -52,6 +59,8 @@ class User(Base):
         'Address', backref=backref('user'))
     orders = relationship(
         'Order', backref=backref('user'))
+    coupons_redeemed = relationship(
+        'Coupon', secondary=coupons_redeemed, backref=backref('redeemed_by'))
 
     def is_admin(self):
         """Check to see if user is super admin

@@ -14,3 +14,4 @@ from . import PopularSearch
 from . import ProductSuggestions
 from . import CustomErrorMessage
 from . import Rider
+from . import Coupon

@@ -8,3 +8,4 @@ from . import addresses
 from . import admin
 from . import search
 from . import riders
+from . import coupons
