@@ -3,7 +3,7 @@ import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
 # Models
-from models.User import User
+from models.User import User, coupons_redeemed
 from models.Coupon import Coupon
 from models.CustomErrorMessage import CouponErrorMessage, CustomErrorMessage
 #  schemas
@@ -19,8 +19,21 @@ router = APIRouter()
 
 @router.get('/', response_model=List[CouponSchemaOut])
 def get_coupons_used(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
-    # get all product tags
-    return [serialize(x) for x in current_user.coupons_redeemed]
+    redeemed_coupons = session.query(coupons_redeemed).filter_by(
+        user_id=current_user.id).all()
+    coupons_redeemed_return = []
+    for redeemed_coupon in redeemed_coupons:
+        coupon = session.query(Coupon).get(redeemed_coupon.coupon_id)
+        coupons_redeemed_return.append({
+            "id": coupon.id,
+            "coupon_code": coupon.coupon_code,
+            "valid_from": coupon.valid_from,
+            "credit": coupon.credit,
+            "valid_until": coupon.valid_until,
+            "date_redeemed": redeemed_coupon.date_redeemed
+        })
+
+    return coupons_redeemed_return
 
 
 @router.post('/')

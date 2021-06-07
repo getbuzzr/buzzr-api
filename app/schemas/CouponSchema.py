@@ -9,6 +9,7 @@ class CouponSchemaOut(BaseModel):
     credit: int
     valid_from: datetime
     valid_until: datetime
+    date_redeemed: datetime
 
 
 class CouponSchemaIn(BaseModel):
