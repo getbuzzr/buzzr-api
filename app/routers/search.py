@@ -8,6 +8,7 @@ from models.Product import Product, product_tags
 from models.User import User
 from models.ProductTag import ProductTag
 from models.PopularSearch import PopularSearch
+from models.Search import Search
 # schemas
 from schemas.ProductSchema import ProductSchemaOut
 from schemas.SearchSchema import SearchSchemaOut
@@ -37,6 +38,9 @@ def search(q: str = "", session: Session = Depends(get_db)):
     products_with_tags = session.query(Product).join(product_tags).filter(
         product_tags.c.tag_id.in_(tag_ids)).all()
     searched_items = products + products_with_tags
+    search = Search(search_term=q)
+    session.add(search)
+    session.commit()
     return [serialize(x) for x in searched_items]
 
 
