@@ -26,6 +26,12 @@ class OrderErrorMessageEnum(str, enum.Enum):
     NO_CREDIT_ORDER_FOUND = "NO_CREDIT_ORDER_FOUND"
 
 
+class CouponErrorMessage(str, enum.Enum):
+    NO_COUPON_FOUND = "NO_COUPON_FOUND"
+    DATE_NOT_VALID = "DATE_NOT_VALID"
+    COUPON_ALREADY_REDEEMED = "COUPON_ALREADY_REDEEMED"
+
+
 class CustomErrorMessage():
 
     def __init__(self, err_code, error_message="", error_detail=""):
