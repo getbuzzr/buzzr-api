@@ -27,6 +27,20 @@ import json
 
 router = APIRouter()
 
+
+def re_add_stock(order, session):
+    """Re adds all the stock that the order currently uses
+
+    Args:
+        order ([Order]): The order we want to readd 
+        session [DBSession] the db session
+
+    """
+    products_in_order = order.products_ordered
+    for product_ordered in products_in_order:
+        product_ordered.product.stock += product_ordered.quantity
+    session.commit()
+
 # Commented out in case we want to support in future
 # @router.delete('/{order_id}')
 # def delete_orders(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
@@ -129,6 +143,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             CustomErrorMessage(
                                 OrderErrorMessageEnum.STORE_NOT_OPEN, error_message="Store is not open").jsonify())
+    # check to see if we have enough bikers to fulfill the orders
     current_order_count = session.query(Order).filter(
         Order.status.in_([OrderStatusEnum.preparing, OrderStatusEnum.paid, OrderStatusEnum.out_for_delivery, OrderStatusEnum.delivered])).count()
     if current_order_count >= int(get_parameter_from_ssm('num_riders_working')):
@@ -139,6 +154,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     preexisting_order = session.query(Order).filter_by(
         status=OrderStatusEnum.checking_out, user_id=current_user.id).first()
     if preexisting_order:
+        re_add_stock(preexisting_order, session)
         session.delete(preexisting_order)
     # if address is specified, check if it exists
     if order.address_id:
