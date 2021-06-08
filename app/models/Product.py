@@ -18,6 +18,7 @@ class ProductUnitEnum(str, enum.Enum):
     pack = 'pack'
     volume = 'volume'
     piece = 'piece'
+    approx_weight = 'approx_weight'
 
 
 class ProductStatusEnum(str, enum.Enum):
