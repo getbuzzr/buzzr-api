@@ -17,7 +17,7 @@ import datetime
 router = APIRouter()
 
 
-@router.get('/', response_model=List[CouponSchemaOut])
+@router.get('', response_model=List[CouponSchemaOut])
 def get_coupons_used(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     redeemed_coupons = session.query(coupons_redeemed).filter_by(
         user_id=current_user.id).all()
@@ -36,7 +36,7 @@ def get_coupons_used(current_user: User = Depends(get_current_user), session: Se
     return coupons_redeemed_return
 
 
-@router.post('/')
+@router.post('')
 def post_coupons(coupon_in: CouponSchemaIn, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     coupon_targeted = session.query(Coupon).filter_by(
         coupon_code=coupon_in.coupon_code).first()
