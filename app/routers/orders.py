@@ -272,7 +272,7 @@ def post_orders(order_id: int, current_user: User = Depends(get_current_user), s
     current_user.credit -= targeted_order.credit_used
     if current_user.apn_token:
         send_push_sns(current_user.apn_token, "ios",
-                      generate_apple_order_push_payload("Thank you for your order", f"Your order #{order.id} has been processed", OrderStatusEnum.paid))
+                      generate_apple_order_push_payload("Your Order has been successfully paid for. Our team will begin preparing your order shortly", OrderStatusEnum.paid))
     if current_user.fcm_token:
         send_push_sns(current_user.fcm_token, "android",
                       "Your Order has been successfully paid for. Our team will begin preparing your order shortly")
