@@ -61,7 +61,7 @@ def generate_google_maps_share_url(address):
 
 
 def calculate_address_delivery_fee(address_id):
-    return 399
+    return {"delivery_charge": 299, "discount": 299}
 
 
 def check_address_exists(address, list_of_created_addresses):

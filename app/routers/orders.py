@@ -201,7 +201,9 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
                             CustomErrorMessage(
                                 OrderErrorMessageEnum.NO_COST_CALCULATED, error_message="You cant checkout with no items"))
     # add delivery fee,tip
-    delivery_fee = calculate_address_delivery_fee(order.address_id)
+    calculated_delivery_fee = calculate_address_delivery_fee(order.address_id)
+    delivery_fee = calculated_delivery_fee['delivery_charge'] - \
+        calculated_delivery_fee['discount']
     total_cost += delivery_fee
     total_cost += order.tip_amount
     # check to see if user has credit
