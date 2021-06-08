@@ -272,10 +272,10 @@ def post_orders(order_id: int, current_user: User = Depends(get_current_user), s
     current_user.credit -= targeted_order.credit_used
     if current_user.apn_token:
         send_push_sns(current_user.apn_token, "ios",
-                      generate_apple_order_push_payload("⚡️ Thanks for your order!️ Our team will begin preparing your order shortly.", OrderStatusEnum.paid))
+                      generate_apple_order_push_payload("⚡️ Thanks for your order!️", "Our team will begin preparing your order shortly.", OrderStatusEnum.paid))
     if current_user.fcm_token:
         send_push_sns(current_user.fcm_token, "android",
-                      "Your order is successful. Our team will begin preparing your order shortly")
+                      "⚡️ Thanks for your order!️ Our team will begin preparing your order shortly.")
     targeted_order.date_paid = datetime_now
     session.commit()
     SlackWebhookClient().post_delivery(targeted_order.id, targeted_order.user.id, targeted_order.address,
