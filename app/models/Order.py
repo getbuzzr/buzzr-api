@@ -61,4 +61,4 @@ class Order(Base):
     rider_assigned_id = Column(Integer, ForeignKey('rider.id'), nullable=True)
     rider_assigned = relationship("Rider", back_populates="orders")
     # This field is used to check if we have already sent a user a push notification that they are abandoning card
-    is_user_abandoned_cart_notified = Column(Boolean, default=False)
+    is_user_abandoned_cart_notified = Column(Boolean,  default=False)
