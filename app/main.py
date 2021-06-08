@@ -10,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.exceptions import HTTPException
 from starlette.responses import UJSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi_utils.tasks import repeat_every
+from scheduler import remove_abandoned_orders
 app = FastAPI()
 origins = [
     "*"
@@ -29,3 +31,9 @@ async def http_exception_handler(request: Request, exc: HTTPException) -> UJSONR
 # include routes
 app.include_router(api_router)
 app.add_exception_handler(HTTPException, http_exception_handler)
+
+
+@app.on_event("startup")
+@repeat_every(seconds=30)
+def minute_cron():
+    remove_abandoned_orders()
