@@ -21,3 +21,15 @@ def get_db():
         raise
     finally:
         db.close()
+
+
+@contextmanager
+def session_scope():
+    try:
+        db = SessionLocal()
+        yield db
+    except:
+        db.rollback()
+        raise
+    finally:
+        db.close()
