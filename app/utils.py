@@ -119,8 +119,6 @@ def send_push_sns(device_id, device_type, body):
         platform_application_arn = os.environ['IOS_SNS_PLATFORM_APPLICATION_ARN']
     elif device_type == "android":
         platform_application_arn = os.environ['ANDROID_SNS_PLATFORM_APPLICATION_ARN']
-    else:
-        raise Exception("device type must be android or ios")
     try:
         endpoint_response = client.create_platform_endpoint(
             PlatformApplicationArn=platform_application_arn,
@@ -131,12 +129,15 @@ def send_push_sns(device_id, device_type, body):
         # case where user disabled endpoint response
         logging.error(e)
         return
-
-    publish_result = client.publish(
-        TargetArn=endpoint_arn,
-        Message=body,
-        MessageStructure="json"
-    )
+    try:
+        publish_result = client.publish(
+            TargetArn=endpoint_arn,
+            Message=body,
+            MessageStructure="json"
+        )
+    except Exception as e:
+        logging.error(f"Push not published {e}")
+        return
     logging.info(f"push sent {publish_result}")
 
 

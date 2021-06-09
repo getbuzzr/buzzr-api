@@ -113,10 +113,7 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             "not supported update")
     targeted_user = session.query(User).get(edited_order.user_id)
-    if targeted_user.apn_token:
-        send_push_sns(targeted_user.apn_token, "ios", message)
-    if targeted_user.fcm_token:
-        send_push_sns(targeted_user.fcm_token, "android", message)
+
     # update the db
     datetime_now = datetime.datetime.utcnow()
     if order.status.value == "preparing":
@@ -127,6 +124,10 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
         edited_order.date_delivered = datetime_now
     elif order.status.value == "complete":
         edited_order.date_complete = datetime_now
+    if targeted_user.apn_token:
+        send_push_sns(targeted_user.apn_token, "ios", message)
+    if targeted_user.fcm_token:
+        send_push_sns(targeted_user.fcm_token, "android", message)
     session.commit()
     return status.HTTP_200_OK
 
