@@ -140,14 +140,14 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
                                 OrderErrorMessageEnum.ADDRESS_LAT_LNG_NOT_PRESENT, error_message="Order must have address of lat/lng").jsonify())
     # check to see if store is open
     if get_parameter_from_ssm('is_store_open') == "false":
-        raise HTTPException(status.HTTP_403_FORBIDDEN,
+        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
                             CustomErrorMessage(
                                 OrderErrorMessageEnum.STORE_NOT_OPEN, error_message="Store is not open").jsonify())
     # check to see if we have enough bikers to fulfill the orders
     current_order_count = session.query(Order).filter(
         Order.status.in_([OrderStatusEnum.preparing, OrderStatusEnum.paid, OrderStatusEnum.out_for_delivery, OrderStatusEnum.delivered])).count()
     if current_order_count >= int(get_parameter_from_ssm('num_riders_working')):
-        raise HTTPException(status.HTTP_403_FORBIDDEN,
+        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
                             CustomErrorMessage(
                                 OrderErrorMessageEnum.MAX_ORDERS_REACHED, error_message="We are currently too busy").jsonify())
     # check if user already has order in "checking out"
