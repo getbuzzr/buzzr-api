@@ -25,6 +25,8 @@ from database import get_db
 import datetime
 import json
 
+MIN_ORDER_THRESHOLD = 50
+
 router = APIRouter()
 
 
@@ -220,6 +222,10 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         payment_intent = None
         stripe_ephemeral_key = None
     else:
+        if total_cost < MIN_ORDER_THRESHOLD:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                CustomErrorMessage(
+                                    OrderErrorMessageEnum.COST_LESS_THEN_THRESHOLD, error_message=f"You cant checkout with less then {MIN_ORDER_THRESHOLD} cents"))
         payment_intent = StripeApiClient('cad').generate_payment_intent(
             current_user.stripe_id, total_cost)
         stripe_ephemeral_key = StripeApiClient('cad').generate_ephemeral_key(

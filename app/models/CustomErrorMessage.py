@@ -24,6 +24,7 @@ class OrderErrorMessageEnum(str, enum.Enum):
     STORE_NOT_OPEN = "STORE_NOT_OPEN"
     MAX_ORDERS_REACHED = "MAX_ORDERS_REACHED"
     NO_CREDIT_ORDER_FOUND = "NO_CREDIT_ORDER_FOUND"
+    COST_LESS_THEN_THRESHOLD = "COST_LESS_THEN_THRESHOLD"
 
 
 class CouponErrorMessage(str, enum.Enum):
