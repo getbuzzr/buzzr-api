@@ -9,12 +9,15 @@ import json
 from models.Order import Order, OrderStatusEnum
 from models.User import User, REFERRAL_USER_CREDIT
 from models.Product import Product
+from models.Department import Department
+from models.Category import Category
 from models.ProductOrdered import ProductOrdered
 from models.SlackWebhookClient import SlackWebhookClient
 import datetime
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut
 from schemas.AdminSchema import AdminOrderStatusSchemaEdit, AdminOrderSchemaEdit, StoreOpenSchema, NumRidersSchema
+from schemas.ProductSchema import ProductSchemaIn
 # Auth
 from auth import get_current_user, is_admin
 from utils import serialize, send_push_sns, generate_apple_order_push_payload
@@ -176,3 +179,49 @@ def change_store_open(request: Request, store_open: StoreOpenSchema, session: Se
         raise HTTPException(status.HTTP_403_FORBIDDEN,
                             "Server has no ssm permission")
     return status.HTTP_200_OK
+
+
+@router.post('/products/create', include_in_schema=False)
+def create_product(request: Request, product: ProductSchemaIn, session: Session = Depends(get_db)):
+    # allows retool to make post
+    retool_auth_key = os.environ['RETOOL_AUTH_KEY']
+    retool_key = request.headers['retool-auth-key']
+    if retool_auth_key != retool_key:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
+    department = session.query(Department).filter_by(
+        name=product.department).first()
+    # create department
+    if department is None:
+        new_department = Department(name=product.department)
+        session.add(new_department)
+        session.commit()
+        department_id = new_department.id
+    else:
+        department_id = department.id
+
+    category = session.query(Category).filter_by(name=product.category).first()
+    if category is None:
+        new_category = Category(name=product.category,
+                                department_id=department_id)
+        session.add(new_category)
+        session.commit()
+        category_id = new_category.id
+    else:
+        category_id = category.id
+    tax = 0
+    if "p" in product.tax:
+        tax += 7
+    if "g" in product.tax:
+        tax += 5
+    product.cost.replace('.', '')
+    new_product = Product(name=product.name,
+                          quantity=product.quantity,
+                          category_id=category_id,
+                          department_id=department_id,
+                          stock=product.stock,
+                          cost=product.cost,
+                          image_url=f"https://static.getbuzzr.co/products/{product.photo_id}.jpg",
+                          unit=product.unit.lower(),
+                          shelf_number=product.shelf_number)
+    session.add(new_product)
+    session.commit()

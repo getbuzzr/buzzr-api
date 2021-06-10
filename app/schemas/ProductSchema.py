@@ -25,3 +25,21 @@ class ProductSchemaOut(BaseModel):
     tax: float
     unit: ProductUnitEnum
     status: ProductStatusEnum
+
+
+class ProductSchemaIn(BaseModel):
+    """This schema is used to validate User api endpoint
+    """
+    name: str
+    category: str
+    stock: int
+    description: Optional[str]
+    department: str
+    quantity: int
+    cost: str
+    image_url: Optional[str]
+    percent_discount: Optional[int]
+    tax: str
+    photo_id: str
+    unit: ProductUnitEnum
+    shelf_number: Optional[int]
