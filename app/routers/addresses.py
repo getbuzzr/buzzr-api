@@ -55,9 +55,7 @@ def get_seconds_away_from_hq(latitude, longitude):
 
 
 def generate_google_maps_share_url(address):
-    address_string = urllib.parse.quote_plus(
-        f"{address.street_address},{address.city},{address.province},{address.country},{address.postal_code}")
-    return f"http://google.com/maps/dir/?api=1&destination={address_string}&travelmode=bicycling"
+    return f"http://google.com/maps/dir/?api=1&destination={address.latitude},{address.longitude}&travelmode=bicycling"
 
 
 def calculate_address_delivery_fee(address_id):

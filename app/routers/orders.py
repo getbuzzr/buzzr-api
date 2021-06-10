@@ -286,6 +286,6 @@ def post_orders(order_id: int, current_user: User = Depends(get_current_user), s
                       "⚡️ Thanks for your order!️ Our team will begin preparing your order shortly.")
     targeted_order.date_paid = datetime_now
     session.commit()
-    SlackWebhookClient().post_delivery(targeted_order.id, targeted_order.user.id, targeted_order.address,
-                                       f"{current_user.first_name} {current_user.last_name}", targeted_order.products_ordered)
+    SlackWebhookClient().post_delivery(targeted_order.id, targeted_order.user,
+                                       targeted_order.address, targeted_order.products_ordered)
     return status.HTTP_200_OK
