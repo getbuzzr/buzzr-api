@@ -17,13 +17,12 @@ class SlackWebhookClient():
         # set up ses client
         self.ses_client = boto3.client('ses')
 
-    def post_delivery(self, order_id, user_id, user_address, user_name, items_ordered):
+    def post_delivery(self, order_id, user, user_address, items_ordered):
         """This is to post a delivery message to slack #delivery
 
         Args:
-            user_id ([int]): [description]
+            user ([int]): [description]
             user_address ([str]): [description]
-            user_name ([str]): [description]
             items_ordered ([List[ProductOrdered] ]): [description]
             date_order_created ([datetime]): [description]
         """
@@ -37,7 +36,7 @@ class SlackWebhookClient():
         if user_address.apartment_number:
             address_string = address_string + \
                 f"\n apartment_number: {user_address.buzzer} \n"
-        payload = f"{{\"text\":\"<!here> *New Order - {order_id}* \n *Name*:{user_name} \n *Address*: \n {address_string} *Items Ordered*\n- {order_string} \"}}"
+        payload = f"{{\"text\":\"<!here> *New Order - {order_id}* \n *Name*:{user.first_name} {user.last_name} \n *Phone Number* : {user.phone_number} \n *Address Google Maps*: {user_address.google_share_url}\n*Address*: \n {address_string} *Items Ordered*\n- {order_string} \"}}"
         headers = {
             'Content-Type': "application/json",
         }

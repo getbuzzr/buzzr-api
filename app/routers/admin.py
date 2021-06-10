@@ -86,8 +86,8 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
         user.credit -= order.credit_used
     session.commit()
     # post order to slack webhook
-    SlackWebhookClient().post_delivery(order.id, order.user.id, order.address,
-                                       f"{order.user.first_name} {order.user.last_name}", order.products_ordered)
+    SlackWebhookClient().post_delivery(order.id, order.user,
+                                       order.address, order.products_ordered)
     return status.HTTP_200_OK
 
 
