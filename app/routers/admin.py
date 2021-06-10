@@ -220,7 +220,7 @@ def create_product(request: Request, product: ProductSchemaIn, session: Session 
                           category_id=category_id,
                           department_id=department_id,
                           stock=product.stock,
-                          cost=product.cost,
+                          cost=product.cost.replace('.', ""),
                           image_url=f"https://static.getbuzzr.co/products/{product.photo_id}.jpg",
                           unit=product.unit.lower(),
                           shelf_number=product.shelf_number)
