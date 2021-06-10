@@ -216,6 +216,7 @@ def create_product(request: Request, product: ProductSchemaIn, session: Session 
     product.cost.replace('.', '')
     new_product = Product(name=product.name,
                           quantity=product.quantity,
+                          description=product.description,
                           category_id=category_id,
                           department_id=department_id,
                           stock=product.stock,
