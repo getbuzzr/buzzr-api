@@ -6,6 +6,7 @@ from sqlalchemy import and_
 # Models
 from models.Product import Product, product_tags
 from models.User import User
+from models.Category import Category
 from models.ProductTag import ProductTag
 from models.PopularSearch import PopularSearch
 from models.Search import Search
@@ -31,13 +32,16 @@ def search(q: str = "", session: Session = Depends(get_db)):
     # prepare products
     products = session.query(Product).filter(
         Product.name.like(search_term)).all()
+    products_category = session.query(Category).filter(
+        Category.name.like(search_term)).all()
     # get products that have tags in like search
     tags = session.query(ProductTag).filter(
         ProductTag.name.like(search_term)).all()
     tag_ids = [x.id for x in tags]
     products_with_tags = session.query(Product).join(product_tags).filter(
         product_tags.c.tag_id.in_(tag_ids)).all()
-    searched_items = products + products_with_tags
+    searched_items = products + products_category + products_with_tags
+    items_searched_unique = list(set(searched_items))
     search = Search(search_term=q)
     session.add(search)
     session.commit()
