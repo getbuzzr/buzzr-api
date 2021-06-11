@@ -50,5 +50,8 @@ class SlackWebhookClient():
                 self.DELIVERY_ENDPOINT, data=payload, headers=headers)
         except Exception as e:
             logging.info(e)
+            payload = f"{{\"text\":\"<!here> *New Order - {order_id}* \n *Name*:{user.first_name} {user.last_name} \n *Phone Number* : {user.phone_number} \n *Address Google Maps*: {user_address.google_share_url}\n *Items Ordered*\n- {order_string} \"}}"
+            response = requests.post(
+                self.DELIVERY_ENDPOINT, data=payload, headers=headers)
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
         pass
