@@ -32,8 +32,10 @@ def search(q: str = "", session: Session = Depends(get_db)):
     # prepare products
     products = session.query(Product).filter(
         Product.name.like(search_term)).all()
-    products_category = session.query(Category).filter(
+    category = session.query(Category).filter(
         Category.name.like(search_term)).all()
+    products_category = session.query(Product).filter(
+        Product.category_id.in_([x.id for x in category])).all()
     # get products that have tags in like search
     tags = session.query(ProductTag).filter(
         ProductTag.name.like(search_term)).all()
@@ -45,7 +47,7 @@ def search(q: str = "", session: Session = Depends(get_db)):
     search = Search(search_term=q)
     session.add(search)
     session.commit()
-    return [serialize(x) for x in searched_items]
+    return [serialize(x) for x in items_searched_unique]
 
 
 @router.get('/popular', response_model=List[SearchSchemaOut])
