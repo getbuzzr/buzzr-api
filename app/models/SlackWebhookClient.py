@@ -49,5 +49,6 @@ class SlackWebhookClient():
             response = requests.post(
                 self.DELIVERY_ENDPOINT, data=payload, headers=headers)
         except Exception as e:
+            logging.info(e)
             raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR)
         pass
