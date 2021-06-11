@@ -9,3 +9,4 @@ from . import AddressSchema
 from . import SearchSchema
 from . import AdminSchema
 from . import RiderSchema
+from . import ProductTagSchema

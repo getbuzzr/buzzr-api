@@ -13,11 +13,13 @@ from models.Department import Department
 from models.Category import Category
 from models.ProductOrdered import ProductOrdered
 from models.SlackWebhookClient import SlackWebhookClient
+from models.ProductTag import ProductTag
 import datetime
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut
 from schemas.AdminSchema import AdminOrderStatusSchemaEdit, AdminOrderSchemaEdit, StoreOpenSchema, NumRidersSchema
 from schemas.ProductSchema import ProductSchemaIn
+from schemas.ProductTagSchema import ProductTagSchemaIn
 # Auth
 from auth import get_current_user, is_admin
 from utils import serialize, send_push_sns, generate_apple_order_push_payload
@@ -227,3 +229,32 @@ def create_product(request: Request, product: ProductSchemaIn, session: Session 
                           shelf_number=product.shelf_number)
     session.add(new_product)
     session.commit()
+
+
+@router.post('/tags/create', include_in_schema=False)
+def create_tags(request: Request, product_tag_in: ProductTagSchemaIn, session: Session = Depends(get_db)):
+    # allows retool to make post
+    retool_auth_key = os.environ['RETOOL_AUTH_KEY']
+    retool_key = request.headers['retool-auth-key']
+    if retool_auth_key != retool_key:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
+    tags = product_tag_in.tags.split(',')
+    product = session.query(Product).filter_by(
+        name=product_tag_in.name).first()
+    if product is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No product found")
+
+    for tag in tags:
+        tag_targeted = session.query(ProductTag).filter_by(name=tag).first()
+        if tag_targeted is None:
+            new_tag = ProductTag(name=tag)
+            session.add(new_tag)
+            session.commit()
+            tag_targeted = new_tag
+
+        if tag_targeted in product.tags:
+            continue
+
+        product.tags.append(tag_targeted)
+    session.commit()
+    return status.HTTP_200_OK
