@@ -16,7 +16,6 @@ def remove_abandoned_orders():
         thirty_mins_since = datetime.datetime.utcnow() - datetime.timedelta(minutes=30)
         orders_ten_mins_over = session.query(Order).filter(and_(Order.status == OrderStatusEnum.checking_out,
                                                                 Order.date_created < ten_mins_since)).all()
-        print(orders_ten_mins_over)
         for order_ten_min_over in orders_ten_mins_over:
             # user has not been push notified, send push
             if not order_ten_min_over.is_user_abandoned_cart_notified:

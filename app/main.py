@@ -36,5 +36,4 @@ app.add_exception_handler(HTTPException, http_exception_handler)
 @app.on_event("startup")
 @repeat_every(seconds=60)
 def minute_cron():
-    print("APPLICATION STARTUP SCRIPT")
     remove_abandoned_orders()
