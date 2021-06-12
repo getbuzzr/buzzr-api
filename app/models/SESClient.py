@@ -47,3 +47,30 @@ class SESClient():
         except Exception as e:
             logging.error(e)
             raise HTTPException(500)
+
+    def send_order_receipt(self, order):
+       # gather the template
+        template_path = "email_templates/order_receipt.html"
+        email_template_path = os.path.join(
+            APP_ROOT, template_path)
+        email_template_text = open(email_template_path, "r").read()
+        products_ordered = ""
+        for product_ordered in order.products_ordered:
+            products_ordered = f"{products_ordered}<tr><td>{product_ordered.product.name}</td><td>{product_ordered.quantity}x{product_ordered.product.cost}</tr>"
+
+        # replace template with placeholders
+        email_template_text = email_template_text.replace("{first_name}", order.user.first_name).replace(
+            "{last_name}", order.user.last_name)
+        
+            
+        try:
+            self.ses_client.send_email(Source=self.FROM_EMAIL,
+                                       Destination={
+                                           'ToAddresses': [order.user.email]},
+                                       Message={'Subject': {'Data': f"Buzzer Order Receipt #{order.id}"},
+                                                'Body': {'Html': {
+                                                    'Data': email_template_text
+                                                }}})
+        except Exception as e:
+            logging.error(e)
+        return    
