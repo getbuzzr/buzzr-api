@@ -267,8 +267,8 @@ def create_tax(request: Request, product_tax_in: ProductTaxSchemaIn, session: Se
     retool_key = request.headers['retool-auth-key']
     if retool_auth_key != retool_key:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
-    product = session.query(Product).filter_by(
-        name=product_tax_in.name).first()
+    product = session.query(Product).filter(
+        Product.image_url.contains(product_tax_in.photo_id)).first()
     if product is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No product found")
     tax = 0
