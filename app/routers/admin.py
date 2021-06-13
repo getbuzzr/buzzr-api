@@ -211,9 +211,9 @@ def create_product(request: Request, product: ProductSchemaIn, session: Session 
     else:
         category_id = category.id
     tax = 0
-    if "P" in product.tax:
+    if "p" in product.tax.lower():
         tax += 7
-    if "G" in product.tax:
+    if "g" in product.tax.lower():
         tax += 5
     product.cost.replace('.', '')
     new_product = Product(name=product.name,
