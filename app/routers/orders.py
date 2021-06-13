@@ -51,7 +51,7 @@ def delete_orders(current_user: User = Depends(get_current_user), session: Sessi
     if order is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             "actve order doesnt exist or doesnt belong to user")
-    re_add_stock(order)
+    re_add_stock(order, session)
     # return stock to the product
     session.delete(order)
     session.commit()
