@@ -107,11 +107,19 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
     if edited_order is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             f"order: {order_id} doesnt exist")
+    # if status update is complete, set in DB and dont sent user push
+    datetime_now = datetime.datetime.utcnow()
+    if order.status.value == "complete":
+        edited_order.date_complete = datetime_now
+        session.commit()
+        return status.HTTP_200_OK
     # iterate through all the attributes of the usereditschema
     messages = {'preparing': generate_apple_order_push_payload("Your order is being prepared", f"Your order #{order_id} is now being prepared by our team", OrderStatusEnum.preparing),
                 "out_for_delivery": generate_apple_order_push_payload("Your order is being delivered", f"Your order #{order_id} is now being delivered by a rider from our team. It will be there shortly", OrderStatusEnum.out_for_delivery),
                 "delivered": generate_apple_order_push_payload("Your order has arrived", f"Your order #{order_id} has arrived!", OrderStatusEnum.out_for_delivery),
-                "complete": generate_apple_order_push_payload("Thank you for your order", f"Your order #{order_id} has been completed!", OrderStatusEnum.complete)}
+                "arrived": generate_apple_order_push_payload("Your rider has arrived!", f"Your order #{order_id} has arrived!", OrderStatusEnum.arrived),
+                "delivered": generate_apple_order_push_payload("Your order has been delivered", f"Your order #{order_id} has been completed! Thank for for using Buzzr and supporting local!", OrderStatusEnum.delivered),
+                }
     try:
         message = messages[order.status.value]
     except:
@@ -120,15 +128,14 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
     targeted_user = session.query(User).get(edited_order.user_id)
 
     # update the db
-    datetime_now = datetime.datetime.utcnow()
     if order.status.value == "preparing":
         edited_order.date_preparing = datetime_now
     elif order.status.value == "out_for_delivery":
         edited_order.date_out_for_delivery = datetime_now
+    elif order.status.value == "arrived":
+        edited_order.date_arrived = datetime_now
     elif order.status.value == "delivered":
         edited_order.date_delivered = datetime_now
-    elif order.status.value == "complete":
-        edited_order.date_complete = datetime_now
     if targeted_user.apn_token:
         send_push_sns(targeted_user.apn_token, "ios", message)
     if targeted_user.fcm_token:

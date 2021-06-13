@@ -312,7 +312,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             "stripe_payment_intent_secret": payment_intent.client_secret if payment_intent else None,
             'stripe_customer_id': current_user.stripe_id,
             'stripe_ephemeral_key': stripe_ephemeral_key.secret if stripe_ephemeral_key else None,
-            'promo_code': promo_code_targeted.promo_code if promo_code_targeted else None,
+            'promo_code': promo_code_targeted.promo_code if promo_code_credit else None,
             'credit_used': credit_used}
 
 
