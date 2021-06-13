@@ -18,7 +18,7 @@ import datetime
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut
 from schemas.AdminSchema import AdminOrderStatusSchemaEdit, AdminOrderSchemaEdit, StoreOpenSchema, NumRidersSchema
-from schemas.ProductSchema import ProductSchemaIn
+from schemas.ProductSchema import ProductSchemaIn, ProductTaxSchemaIn
 from schemas.ProductTagSchema import ProductTagSchemaIn
 # Auth
 from auth import get_current_user, is_admin
@@ -211,9 +211,9 @@ def create_product(request: Request, product: ProductSchemaIn, session: Session 
     else:
         category_id = category.id
     tax = 0
-    if "p" in product.tax:
+    if "P" in product.tax:
         tax += 7
-    if "g" in product.tax:
+    if "G" in product.tax:
         tax += 5
     product.cost.replace('.', '')
     new_product = Product(name=product.name,
@@ -256,5 +256,26 @@ def create_tags(request: Request, product_tag_in: ProductTagSchemaIn, session: S
             continue
 
         product.tags.append(tag_targeted)
+    session.commit()
+    return status.HTTP_200_OK
+
+
+@router.post('/tax/create', include_in_schema=False)
+def create_tax(request: Request, product_tax_in: ProductTaxSchemaIn, session: Session = Depends(get_db)):
+    # allows retool to make post
+    retool_auth_key = os.environ['RETOOL_AUTH_KEY']
+    retool_key = request.headers['retool-auth-key']
+    if retool_auth_key != retool_key:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
+    product = session.query(Product).filter_by(
+        name=product_tax_in.name).first()
+    if product is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "No product found")
+    tax = 0
+    if "p" in product_tax_in.tax.lower():
+        tax += 7
+    if "g" in product_tax_in.tax.lower():
+        tax += 5
+    product.tax = tax
     session.commit()
     return status.HTTP_200_OK

@@ -9,7 +9,6 @@ from utils import serialize, send_push_sns, generate_apple_order_push_payload
 
 
 def remove_abandoned_orders():
-    print("START ABANDON ORDER")
     with session_scope() as session:
         # get all orders that are checking out date_created > 5 mins ago
         ten_mins_since = datetime.datetime.utcnow() - datetime.timedelta(minutes=10)

@@ -43,24 +43,19 @@ def re_add_stock(order, session):
         product_ordered.product.stock += product_ordered.quantity
     session.commit()
 
-# Commented out in case we want to support in future
-# @router.delete('/{order_id}')
-# def delete_orders(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
-#     order = session.query(Order).filter_by(
-#         user_id=current_user.id, id=order_id, status=OrderStatusEnum.checking_out).first()
-#     if order is None:
-#         raise HTTPException(status.HTTP_400_BAD_REQUEST,
-#                             "active order doesnt exist or doesnt belong to user")
-#     # return stock to the product
-#     products_ordered = session.query(Product).filter(
-#         Product.id.in_([x.product_id for x in order.products_ordered])).all()
-#     for product_ordered in products_ordered:
-#         quantity = [
-#             x.quantity for x in order.products_ordered if x.product_id == product_ordered.id][0]
-#         product_ordered.stock += quantity
-#     session.delete(order)
-#     session.commit()
-#     return status.HTTP_200_OK
+
+@router.delete('')
+def delete_orders(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+    order = session.query(Order).filter_by(
+        user_id=current_user.id, status=OrderStatusEnum.checking_out).first()
+    if order is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                            "actve order doesnt exist or doesnt belong to user")
+    re_add_stock(order)
+    # return stock to the product
+    session.delete(order)
+    session.commit()
+    return status.HTTP_200_OK
 
 
 @router.get('', response_model=List[OrderSchemaOut])
