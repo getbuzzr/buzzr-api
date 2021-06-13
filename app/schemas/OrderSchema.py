@@ -13,6 +13,7 @@ class OrderSchemaIn(BaseModel):
     longitude: Optional[float]
     latitude: Optional[float]
     tip_amount: int
+    promo_code: Optional[str]
 
 
 class OrderSchemaEdit(BaseModel):
@@ -36,6 +37,7 @@ class OrderSchemaCreateOut(BaseModel):
     stripe_ephemeral_key: Optional[str]
     stripe_customer_id: str
     credit_used: int
+    promo_code_credit: Optional[int]
 
 
 class OrderSchemaOut(BaseModel):
@@ -61,6 +63,7 @@ class OrderSchemaOut(BaseModel):
     delivery_charge: int
     subtotal: int
     credit_used: int
+    promo_code_credit: Optional[int]
 
 
 class OrderFeedbackSchemaIn(BaseModel):

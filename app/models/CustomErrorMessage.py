@@ -26,6 +26,10 @@ class OrderErrorMessageEnum(str, enum.Enum):
     NO_CREDIT_ORDER_FOUND = "NO_CREDIT_ORDER_FOUND"
     COST_LESS_THEN_THRESHOLD = "COST_LESS_THEN_THRESHOLD"
 
+class PromoCodeErrorMessage(str,enum.Enum):
+    NOT_VALID = "NOT_VALID"
+    ALREADY_REDEEMED = "ALREADY_REDEEMED"
+    
 
 class CouponErrorMessage(str, enum.Enum):
     NO_COUPON_FOUND = "NO_COUPON_FOUND"
