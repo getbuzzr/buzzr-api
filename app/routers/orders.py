@@ -45,7 +45,7 @@ def re_add_stock(order, session):
 
 
 @router.delete('')
-def delete_orders(order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+def delete_orders(current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
     order = session.query(Order).filter_by(
         user_id=current_user.id, status=OrderStatusEnum.checking_out).first()
     if order is None:
