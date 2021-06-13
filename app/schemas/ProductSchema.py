@@ -46,5 +46,5 @@ class ProductSchemaIn(BaseModel):
 
 
 class ProductTaxSchemaIn(BaseModel):
-    name: str
+    photo_id: str
     tax: str
