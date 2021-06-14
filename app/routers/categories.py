@@ -11,13 +11,14 @@ from schemas.ProductSchema import ProductSchemaOut
 from auth import get_current_user
 from utils import serialize
 # utils
-from database import get_db
+from database import session_scope
 
 router = APIRouter()
 
 
 @router.get('/{category_id}/products', response_model=List[ProductSchemaOut])
-def get_category_products(category_id: int,  session: Session = Depends(get_db)):
-    return_product = session.query(Product).filter_by(
-        category_id=category_id, status=ProductStatusEnum.active).all()
-    return [x.serialize_product() for x in return_product]
+def get_category_products(category_id: int):
+    with session_scope() as session:
+        return_product = session.query(Product).filter_by(
+            category_id=category_id, status=ProductStatusEnum.active).all()
+        return [x.serialize_product() for x in return_product]

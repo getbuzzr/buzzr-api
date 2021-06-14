@@ -23,7 +23,7 @@ def get_db():
         db.close()
 
 
-@ contextmanager
+@contextmanager
 def session_scope():
     try:
         db = SessionLocal()
