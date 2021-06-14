@@ -117,7 +117,7 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
     messages = {'preparing': generate_apple_order_push_payload("Your order is being prepared!", f"Your order #{order_id} is now being prepared by our team.", OrderStatusEnum.preparing),
                 "out_for_delivery": generate_apple_order_push_payload("Your order is being delivered!", f"Your order #{order_id} is now being delivered by a rider from our team. It will be there shortly.", OrderStatusEnum.out_for_delivery),
                 "arrived": generate_apple_order_push_payload("Your rider has arrived!", f"Your order #{order_id} has arrived!", OrderStatusEnum.arrived),
-                "delivered": generate_apple_order_push_payload("Your order has been delivered!", f"Your order #{order_id} has been completed! Thank for for using Buzzr and supporting local!", OrderStatusEnum.delivered),
+                "delivered": generate_apple_order_push_payload("Your order has been delivered!", f"Your order #{order_id} has been completed! Thank you for for using Buzzr and supporting local!", OrderStatusEnum.delivered),
                 }
     try:
         message = messages[order.status.value]

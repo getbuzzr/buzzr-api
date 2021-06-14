@@ -21,6 +21,7 @@ def get_db():
         raise
     finally:
         db.close()
+        engine.dispose()
 
 
 @contextmanager
@@ -33,3 +34,4 @@ def session_scope():
         raise
     finally:
         db.close()
+        engine.dispose()
