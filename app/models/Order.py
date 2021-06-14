@@ -20,6 +20,7 @@ class OrderStatusEnum(str, enum.Enum):
     paid = "paid"
     preparing = "preparing"
     out_for_delivery = "out_for_delivery"
+    arrived = "arrived"
     delivered = "delivered"
     complete = "complete"
     refunded = "refunded"
@@ -43,6 +44,7 @@ class Order(Base):
     date_out_for_delivery = Column(DateTime)
     date_complete = Column(DateTime)
     date_failed = Column(DateTime)
+    date_arrived = Column(DateTime)
     date_paid = Column(DateTime)
     tip_amount = Column(Integer, default=0)
     subtotal = Column(Integer)
