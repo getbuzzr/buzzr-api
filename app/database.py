@@ -6,33 +6,30 @@ from contextlib import contextmanager
 
 # initialize db env
 engine = create_engine(os.environ.get(
-    'SQLALCHEMY_DATABASE_URI'), pool_pre_ping=True, pool_size=32, max_overflow=64
-))
-SessionLocal=sessionmaker(autocommit = False, autoflush = True, bind = engine)
-Base=declarative_base()
-metadata=Base.metadata
+    'SQLALCHEMY_DATABASE_URI'), pool_pre_ping=True, pool_size=32, max_overflow=64)
+SessionLocal = sessionmaker(autocommit=False, autoflush=True, bind=engine)
+Base = declarative_base()
+metadata = Base.metadata
 
 
 def get_db():
     try:
-        db=SessionLocal()
+        db = SessionLocal()
         yield db
     except:
         db.rollback()
         raise
     finally:
         db.close()
-        # engine.dispose()
 
 
 @ contextmanager
 def session_scope():
     try:
-        db=SessionLocal()
+        db = SessionLocal()
         yield db
     except:
         db.rollback()
         raise
     finally:
         db.close()
-        # engine.dispose()
