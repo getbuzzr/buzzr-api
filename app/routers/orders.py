@@ -69,13 +69,6 @@ def delete_orders(current_user: User = Depends(get_current_user), session: Sessi
         raise HTTPException(status.HTTP_400_BAD_REQUEST,
                             "actve order doesnt exist or doesnt belong to user")
     check_promo_code(order, session)
-    if order.promo_code_id:
-        old_promo_code = session.query(PromoCode).get(
-            order.promo_code_id)
-        if old_promo_code:
-            old_promo_code.num_redeems_allowed += 1
-            old_promo_code.orders.remove(order)
-            session.commit()
     re_add_stock(order, session)
     # return stock to the product
     session.delete(order)
