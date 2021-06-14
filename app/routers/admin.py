@@ -74,7 +74,7 @@ async def put_stripe_order(request: Request, session: Session = Depends(get_db))
     user = session.query(User).get(order.user_id)
     if user.apn_token:
         send_push_sns(user.apn_token, "ios",
-                      generate_apple_order_push_payload("Thank you for your order", f"Your order #{order.id} has been processed", OrderStatusEnum.paid))
+                      generate_apple_order_push_payload("Thank you for your order", f"Your order #{order.id} has been processed.", OrderStatusEnum.paid))
     if user.fcm_token:
         send_push_sns(user.fcm_token, "android",
                       "Your Order has been successfully paid for. Our team will begin preparing your order shortly")
@@ -114,11 +114,10 @@ def create_user_notification(request: Request, order: AdminOrderStatusSchemaEdit
         session.commit()
         return status.HTTP_200_OK
     # iterate through all the attributes of the usereditschema
-    messages = {'preparing': generate_apple_order_push_payload("Your order is being prepared", f"Your order #{order_id} is now being prepared by our team", OrderStatusEnum.preparing),
-                "out_for_delivery": generate_apple_order_push_payload("Your order is being delivered", f"Your order #{order_id} is now being delivered by a rider from our team. It will be there shortly", OrderStatusEnum.out_for_delivery),
-                "delivered": generate_apple_order_push_payload("Your order has arrived", f"Your order #{order_id} has arrived!", OrderStatusEnum.out_for_delivery),
+    messages = {'preparing': generate_apple_order_push_payload("Your order is being prepared!", f"Your order #{order_id} is now being prepared by our team.", OrderStatusEnum.preparing),
+                "out_for_delivery": generate_apple_order_push_payload("Your order is being delivered!", f"Your order #{order_id} is now being delivered by a rider from our team. It will be there shortly.", OrderStatusEnum.out_for_delivery),
                 "arrived": generate_apple_order_push_payload("Your rider has arrived!", f"Your order #{order_id} has arrived!", OrderStatusEnum.arrived),
-                "delivered": generate_apple_order_push_payload("Your order has been delivered", f"Your order #{order_id} has been completed! Thank for for using Buzzr and supporting local!", OrderStatusEnum.delivered),
+                "delivered": generate_apple_order_push_payload("Your order has been delivered!", f"Your order #{order_id} has been completed! Thank for for using Buzzr and supporting local!", OrderStatusEnum.delivered),
                 }
     try:
         message = messages[order.status.value]
