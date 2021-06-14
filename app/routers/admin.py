@@ -51,7 +51,7 @@ def get_orders(status: str = None, current_user: User = Depends(get_current_user
 
 @router.post('/orders/stripe_charge', include_in_schema=False)
 async def put_stripe_order(request: Request):
-    with session_scope as session:
+    with session_scope() as session:
         endpoint_secret = os.environ['STRIPE_WEBHOOK_TOKEN']
         payload = await request.body()
         sig_header = request.headers['stripe-signature']
@@ -287,7 +287,8 @@ def create_tax(request: Request, product_tax_in: ProductTaxSchemaIn):
         product = session.query(Product).filter(
             Product.image_url.contains(product_tax_in.photo_id)).first()
         if product is None:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "No product found")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "No product found")
         tax = 0
         if "p" in product_tax_in.tax.lower():
             tax += 7
