@@ -17,40 +17,42 @@ from schemas.SearchSchema import SearchSchemaOut
 from auth import get_current_user
 from utils import serialize
 # utils
-from database import get_db
+from database import session_scope
 
 router = APIRouter()
 
 
 @router.get('', response_model=List[ProductSchemaOut])
-def search(q: str = "", session: Session = Depends(get_db)):
+def search(q: str = ""):
     if len(q) < 2:
         raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
                             "Your search must be  2 or more chars")
     # prepare search term
     search_term = f"%{q}%"
-    # prepare products
-    products = session.query(Product).filter(
-        Product.name.like(search_term)).all()
-    category = session.query(Category).filter(
-        Category.name.like(search_term)).all()
-    products_category = session.query(Product).filter(
-        Product.category_id.in_([x.id for x in category])).all()
-    # get products that have tags in like search
-    tags = session.query(ProductTag).filter(
-        ProductTag.name.like(search_term)).all()
-    tag_ids = [x.id for x in tags]
-    products_with_tags = session.query(Product).join(product_tags).filter(
-        product_tags.c.tag_id.in_(tag_ids)).all()
-    searched_items = products + products_category + products_with_tags
-    items_searched_unique = list(set(searched_items))
-    search = Search(search_term=q)
-    session.add(search)
-    session.commit()
-    return [serialize(x) for x in items_searched_unique]
+    with session_scope() as session:
+        # prepare products
+        products = session.query(Product).filter(
+            Product.name.like(search_term)).all()
+        category = session.query(Category).filter(
+            Category.name.like(search_term)).all()
+        products_category = session.query(Product).filter(
+            Product.category_id.in_([x.id for x in category])).all()
+        # get products that have tags in like search
+        tags = session.query(ProductTag).filter(
+            ProductTag.name.like(search_term)).all()
+        tag_ids = [x.id for x in tags]
+        products_with_tags = session.query(Product).join(product_tags).filter(
+            product_tags.c.tag_id.in_(tag_ids)).all()
+        searched_items = products + products_category + products_with_tags
+        items_searched_unique = list(set(searched_items))
+        search = Search(search_term=q)
+        session.add(search)
+        session.commit()
+        return [serialize(x) for x in items_searched_unique]
 
 
 @router.get('/popular', response_model=List[SearchSchemaOut])
-def search_popular(q: str = "", session: Session = Depends(get_db)):
-    searches = session.query(PopularSearch).all()
-    return [serialize(x) for x in searches]
+def search_popular(q: str = ""):
+    with session_scope() as session:
+        searches = session.query(PopularSearch).all()
+        return [serialize(x) for x in searches]
