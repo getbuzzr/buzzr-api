@@ -177,14 +177,14 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
         status=OrderStatusEnum.checking_out, user_id=current_user.id).first()
     if preexisting_order:
         # if preexisting order has a promo code, remove from Promocode model and add num_redeem_allowed
-        check_promo_code()
-        if preexisting_order.promo_code_id:
-            old_promo_code = session.query(PromoCode).get(
-                preexisting_order.promo_code_id)
-            if old_promo_code:
-                old_promo_code.num_redeems_allowed += 1
-                old_promo_code.orders.remove(preexisting_order)
-                session.commit()
+        # check_promo_code()
+        # if preexisting_order.promo_code_id:
+        #     old_promo_code = session.query(PromoCode).get(
+        #         preexisting_order.promo_code_id)
+        #     if old_promo_code:
+        #         old_promo_code.num_redeems_allowed += 1
+        #         old_promo_code.orders.remove(preexisting_order)
+        #         session.commit()
         re_add_stock(preexisting_order, session)
         session.delete(preexisting_order)
     # if address is specified, check if it exists
@@ -200,24 +200,24 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
                                     OrderErrorMessageEnum.ADDRESS_NOT_SERVICEABLE, error_message="Must deliver to serviceable address").jsonify())
 
     # If promo code is specified, check if it exists and check if user has already used it
-    promo_code_credit = None
-    if order.promo_code:
-        current_datetime = datetime.datetime.utcnow()
-        promo_code_targeted = session.query(PromoCode).filter(and_(
-            PromoCode.promo_code == order.promo_code, PromoCode.valid_from < current_datetime, current_datetime < PromoCode.valid_until), PromoCode.num_redeems_allowed > 0).first()
+    # promo_code_credit = None
+    # if order.promo_code:
+    #     current_datetime = datetime.datetime.utcnow()
+    #     promo_code_targeted = session.query(PromoCode).filter(and_(
+    #         PromoCode.promo_code == order.promo_code, PromoCode.valid_from < current_datetime, current_datetime < PromoCode.valid_until), PromoCode.num_redeems_allowed > 0).first()
 
-        if promo_code_targeted is None:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                                CustomErrorMessage(
-                                    PromoCodeErrorMessage.NOT_VALID, error_message="This promocode is not valid or has expired").jsonify())
-        # check to see if user has already used the promo code
-        offer_with_promocode_applied = session.query(Order).filter_by(
-            user_id=current_user.id, promo_code_id=promo_code_targeted.id).first()
-        if offer_with_promocode_applied:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                                CustomErrorMessage(
-                                    PromoCodeErrorMessage.ALREADY_REDEEMED, error_message="This promo code has already been redeemed by this user").jsonify())
-        promo_code_credit = promo_code_targeted.credit
+    #     if promo_code_targeted is None:
+    #         raise HTTPException(status.HTTP_400_BAD_REQUEST,
+    #                             CustomErrorMessage(
+    #                                 PromoCodeErrorMessage.NOT_VALID, error_message="This promocode is not valid or has expired").jsonify())
+    #     # check to see if user has already used the promo code
+    #     offer_with_promocode_applied = session.query(Order).filter_by(
+    #         user_id=current_user.id, promo_code_id=promo_code_targeted.id).first()
+    #     if offer_with_promocode_applied:
+    #         raise HTTPException(status.HTTP_400_BAD_REQUEST,
+    #                             CustomErrorMessage(
+    #                                 PromoCodeErrorMessage.ALREADY_REDEEMED, error_message="This promo code has already been redeemed by this user").jsonify())
+    #     promo_code_credit = promo_code_targeted.credit
     # check to see if the address exists
     # calculate cost and tax amount
     total_cost = 0
@@ -267,10 +267,10 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             total_cost -= current_user.credit
             credit_used = current_user.credit
     # user is using a valid promo code
-    if promo_code_credit:
-        total_cost -= promo_code_credit
-        if total_cost < 0:
-            total_cost = 0
+    # if promo_code_credit:
+    #     total_cost -= promo_code_credit
+    #     if total_cost < 0:
+    #         total_cost = 0
     # If credit is larger then cost, dont return payment_intent/stripe ephemeral key
     if total_cost == 0:
         payment_intent = None
@@ -288,10 +288,10 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
     new_order = Order(user_id=current_user.id, cost=total_cost, delivery_charge=delivery_fee, tax_charge=total_tax,
                       status=OrderStatusEnum.checking_out, tip_amount=order.tip_amount, subtotal=subtotal, credit_used=credit_used)
     # Link promo code if exists
-    if promo_code_credit:
-        new_order.promo_code_id = promo_code_targeted.id
-        promo_code_targeted.num_redeems_allowed -= 1
-        promo_code_targeted.orders.append(new_order)
+    # if promo_code_credit:
+    #     new_order.promo_code_id = promo_code_targeted.id
+    #     promo_code_targeted.num_redeems_allowed -= 1
+    #     promo_code_targeted.orders.append(new_order)
     if payment_intent:
         new_order.stripe_payment_intent = payment_intent.id
     # if order is associated with the address
@@ -319,7 +319,7 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
             "stripe_payment_intent_secret": payment_intent.client_secret if payment_intent else None,
             'stripe_customer_id': current_user.stripe_id,
             'stripe_ephemeral_key': stripe_ephemeral_key.secret if stripe_ephemeral_key else None,
-            'promo_code': promo_code_targeted.promo_code if promo_code_targeted else None,
+            # 'promo_code': promo_code_targeted.promo_code if promo_code_targeted else None,
             'credit_used': credit_used}
 
 
