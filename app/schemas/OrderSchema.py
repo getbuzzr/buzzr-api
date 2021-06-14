@@ -54,6 +54,7 @@ class OrderSchemaOut(BaseModel):
     date_preparing:  Optional[datetime]
     date_out_for_delivery:  Optional[datetime]
     date_complete:  Optional[datetime]
+    date_arrived:  Optional[datetime]
     date_failed:  Optional[datetime]
     tip_amount:  Optional[int]
     latitude: Optional[float]
