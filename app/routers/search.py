@@ -18,7 +18,7 @@ from auth import get_current_user
 from utils import serialize
 # utils
 from database import session_scope
-
+from collections import OrderedDict
 router = APIRouter()
 
 
@@ -29,8 +29,14 @@ def search(q: str = ""):
                             "Your search must be  2 or more chars")
     # prepare search term
     search_term = f"%{q}%"
+    initial_search = f"{q}%"
+    space_search = f"% {q} %"
     with session_scope() as session:
         # prepare products
+        products_space = session.query(Product).filter(
+            Product.name.like(space_search)).all()
+        products_initial = session.query(Product).filter(
+            Product.name.like(initial_search)).all()
         products = session.query(Product).filter(
             Product.name.like(search_term)).all()
         category = session.query(Category).filter(
@@ -43,8 +49,9 @@ def search(q: str = ""):
         tag_ids = [x.id for x in tags]
         products_with_tags = session.query(Product).join(product_tags).filter(
             product_tags.c.tag_id.in_(tag_ids)).all()
-        searched_items = products + products_category + products_with_tags
-        items_searched_unique = list(set(searched_items))
+        searched_items = products_initial + products_space + products + \
+            products_category + products_with_tags
+        items_searched_unique = list(OrderedDict.fromkeys(searched_items))
         search = Search(search_term=q)
         session.add(search)
         session.commit()
