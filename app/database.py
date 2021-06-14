@@ -21,7 +21,7 @@ def get_db():
         raise
     finally:
         db.close()
-        engine.dispose()
+        # engine.dispose()
 
 
 @contextmanager
