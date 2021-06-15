@@ -13,6 +13,13 @@ from functools import wraps
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
+def get_current_user(cognito_sub, session):
+    try:
+        return session.query(User).filter_by(cognito_sub=cognito_sub).first()
+    except:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED)
+
+
 def has_user_read_update_perms(func):
     """Decorator to check to see if current user has ability to read or update targeted user
     Args:

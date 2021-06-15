@@ -9,8 +9,8 @@ from models.User import User
 # schemas
 from schemas.ProductSchema import ProductSchemaOut, ProductTags, ProductStatusEnum
 # Auth
-from auth import get_current_user_sub
-from utils import serialize, get_current_user
+from auth import get_current_user_sub, get_current_user
+from utils import serialize
 # utils
 from database import session_scope
 
@@ -75,7 +75,6 @@ def delete_favorites(product_id: int, current_user_sub: User = Depends(get_curre
 @router.get('/{product_id}/related', response_model=List[ProductSchemaOut])
 def get_related(product_id: int):
     with session_scope() as session:
-        current_user = get_current_user(current_user_sub, session)
         product = session.query(Product).get(product_id)
         if product is None:
             raise HTTPException(

@@ -9,8 +9,8 @@ from models.CustomErrorMessage import CustomErrorMessage, AddressErrorMessageEnu
 # Schemas
 from schemas.AddressSchema import AddressSchemaIn, AddressSchemaOut, AddressSchemaPut
 # Auth
-from auth import get_current_user_sub
-from utils import serialize, get_current_user
+from auth import get_current_user_sub, get_current_user
+from utils import serialize
 # utils
 from database import session_scope
 import requests

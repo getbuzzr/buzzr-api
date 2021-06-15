@@ -13,14 +13,13 @@ from models.SlackWebhookClient import SlackWebhookClient
 from models.CustomErrorMessage import OrderErrorMessageEnum, CustomErrorMessage, PromoCodeErrorMessage
 from models.PromoCode import PromoCode
 from models.Address import Address
-from utils import get_parameter_from_ssm
 # routers
 from routers.addresses import calculate_address_delivery_fee
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, OrderTipEditSchemaIn,  OrderFeedbackSchemaIn
 # Auth
-from auth import get_current_user_sub
-from utils import serialize, send_push_sns, generate_apple_order_push_payload, get_current_user
+from auth import get_current_user_sub, get_current_user
+from utils import serialize, send_push_sns, generate_apple_order_push_payload, get_parameter_from_ssm
 # utils
 from database import session_scope
 import datetime

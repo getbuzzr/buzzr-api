@@ -7,14 +7,9 @@ from datetime import datetime
 import os
 from functools import wraps
 import phonenumbers
-from models.User import User
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-def get_current_user(cognito_sub,session):
-    try:
-        return session.query(User).filter_by(cognito_sub=cognito_sub).first()
-    except:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED)
+
 def validate_phone_number(phone_number):
     try:
         num = phonenumbers.parse(phone_number, None)
