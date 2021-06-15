@@ -8,7 +8,7 @@ from models.Department import Department
 # schemas
 from schemas.ProductSchema import ProductSchemaOut
 # Auth
-from auth import get_current_user
+from auth import get_current_user_sub
 from utils import serialize
 # utils
 from database import session_scope

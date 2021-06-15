@@ -9,8 +9,8 @@ from models.User import User
 # schemas
 from schemas.ProductSchema import ProductSchemaOut, ProductTags, ProductStatusEnum
 # Auth
-from auth import get_current_user
-from utils import serialize
+from auth import get_current_user_sub
+from utils import serialize, get_current_user
 # utils
 from database import session_scope
 
@@ -28,8 +28,9 @@ def get_product(product_id: int):
 
 
 @router.get('/{product_id}/tags', response_model=List[ProductTags])
-def get_tags(product_id: int, current_user: User = Depends(get_current_user)):
+def get_tags(product_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         product = session.query(Product).get(product_id)
         if product is None:
             raise HTTPException(
@@ -38,8 +39,9 @@ def get_tags(product_id: int, current_user: User = Depends(get_current_user)):
 
 
 @router.post('/{product_id}/favorite')
-def add_favorites(product_id: int, current_user: User = Depends(get_current_user)):
+def add_favorites(product_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         product = session.query(Product).get(product_id)
         if product is None:
             raise HTTPException(
@@ -54,8 +56,9 @@ def add_favorites(product_id: int, current_user: User = Depends(get_current_user
 
 
 @router.delete('/{product_id}/favorite')
-def delete_favorites(product_id: int, current_user: User = Depends(get_current_user)):
+def delete_favorites(product_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         product = session.query(Product).get(product_id)
         if product is None:
             raise HTTPException(
@@ -72,6 +75,7 @@ def delete_favorites(product_id: int, current_user: User = Depends(get_current_u
 @router.get('/{product_id}/related', response_model=List[ProductSchemaOut])
 def get_related(product_id: int):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         product = session.query(Product).get(product_id)
         if product is None:
             raise HTTPException(

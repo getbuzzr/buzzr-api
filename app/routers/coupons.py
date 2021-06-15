@@ -9,8 +9,8 @@ from models.CustomErrorMessage import CouponErrorMessage, CustomErrorMessage
 #  schemas
 from schemas.CouponSchema import CouponSchemaOut, CouponSchemaIn
 # Auth
-from auth import get_current_user
-from utils import serialize
+from auth import get_current_user_sub
+from utils import serialize, get_current_user
 # utils
 from database import session_scope
 import datetime
@@ -18,8 +18,9 @@ router = APIRouter()
 
 
 @router.get('', response_model=List[CouponSchemaOut])
-def get_coupons_used(current_user: User = Depends(get_current_user)):
+def get_coupons_used(current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         redeemed_coupons = session.query(coupons_redeemed).filter_by(
             user_id=current_user.id).all()
         coupons_redeemed_return = []
@@ -38,8 +39,9 @@ def get_coupons_used(current_user: User = Depends(get_current_user)):
 
 
 @router.post('')
-def post_coupons(coupon_in: CouponSchemaIn, current_user: User = Depends(get_current_user)):
+def post_coupons(coupon_in: CouponSchemaIn, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         coupon_targeted = session.query(Coupon).filter_by(
             coupon_code=coupon_in.coupon_code).first()
         # no coupon is found
