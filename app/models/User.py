@@ -54,13 +54,13 @@ class User(Base):
     is_phone_verified = Column(Boolean)
     role = Column(Enum(UserRoleEnum), nullable=False, server_default="user")
     favorite_products = relationship(
-        'Product', secondary=favorite_products, backref=backref('favorited_by'))
+        'Product', secondary=favorite_products, backref=backref('favorited_by'), lazy='subquery')
     addresses = relationship(
         'Address', backref=backref('user'))
     orders = relationship(
         'Order', backref=backref('user'))
     coupons_redeemed = relationship(
-        'Coupon', secondary=coupons_redeemed, backref=backref('redeemed_by'))
+        'Coupon', secondary=coupons_redeemed, backref=backref('redeemed_by'), lazy='subquery')
 
     def is_admin(self):
         """Check to see if user is super admin
