@@ -29,7 +29,7 @@ def get_product(product_id: int):
 
 @router.get('/{product_id}/tags', response_model=List[ProductTags])
 def get_tags(product_id: int, current_user: User = Depends(get_current_user)):
-    with sesion_scope() as session:
+    with session_scope() as session:
         product = session.query(Product).get(product_id)
         if product is None:
             raise HTTPException(
