@@ -16,20 +16,37 @@ from auth import get_current_user_sub
 from utils import serialize
 # utils
 from database import session_scope
-
+from caching import redis_client, REDIS_TTL
+import json
 router = APIRouter()
 
 
 @router.get('', response_model=List[DepartmentSchemaOut])
 def get_departments():
-    with session_scope() as session:
-        return [serialize(x) for x in session.query(Department).all()]
+    try:
+        departments = json.loads(
+            redis_client.get("departments").decode("utf-8"))
+    except:
+        with session_scope() as session:
+            departments = [serialize(x)
+                           for x in session.query(Department).all()]
+            redis_client.set("departments", json.dumps(departments), REDIS_TTL)
+
+    return departments
 
 
 @router.get('/{department_id}/categories', response_model=List[CategorySchemaOut])
 def get_department_categories(department_id: int):
-    with session_scope() as session:
-        return [serialize(x) for x in session.query(Category).filter_by(department_id=department_id).all()]
+    try:
+        categories = json.loads(
+            redis_client.get(f"department_{department_id}_catagories").decode("utf-8"))
+    except:
+        with session_scope() as session:
+            categories = [serialize(x)
+                          for x in session.query(Category).all()]
+            redis_client.set(
+                "department_{department_id}_catagories", json.dumps(categories), REDIS_TTL)
+    return categories
 
 
 @router.get('/{department_id}/products', response_model=List[ProductSchemaOut])
