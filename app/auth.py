@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from database import session_scope
+from caching import redis_client, REDIS_TTL
 from models.User import User
 from models.Rider import Rider
 from functools import wraps
@@ -60,6 +61,7 @@ def auth_user(access_token):
     Args:
         access_token (str): This is the access token
     """
+    # check to see if user in redis
     cognito_client = boto3.client('cognito-idp')
     try:
         user = cognito_client.get_user(AccessToken=access_token)
@@ -75,18 +77,24 @@ def auth_user(access_token):
 
 def get_current_user_sub(token: str = Depends(oauth2_scheme)):
     # try and authenticate user with access token
-    user = auth_user(token)
-    if user is None:
-        raise HTTPException(401)
     try:
-        cognito_sub = [x['Value']
-                       for x in user['UserAttributes'] if x['Name'] == 'sub'][0]
-    except Exception as e:
-        logging.error(f"Couldnt get user {e}")
-        raise HTTPException(500)
-    if user is None:
-        logging.info(f"Couldnt get user with sub {cognito_sub}")
-        raise HTTPException(401, "No user found")
+        cognito_sub = redis_client.get(token).decode("utf-8")
+    except:
+        cognito_sub = None
+    if cognito_sub is None:
+        user = auth_user(token)
+        if user is None:
+            raise HTTPException(401)
+        try:
+            cognito_sub = [x['Value']
+                           for x in user['UserAttributes'] if x['Name'] == 'sub'][0]
+            redis_client.set(token, cognito_sub, REDIS_TTL)
+        except Exception as e:
+            logging.error(f"Couldnt get user {e}")
+            raise HTTPException(500)
+        if user is None:
+            logging.info(f"Couldnt get user with sub {cognito_sub}")
+            raise HTTPException(401, "No user found")
     return cognito_sub
 
 
