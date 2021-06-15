@@ -9,11 +9,11 @@ from models.User import User, UserRoleEnum, REFERRAL_USER_CREDIT
 from models.S3StaticFileClient import S3StaticFileClient
 from models.CustomErrorMessage import UserErrorMessageEnum, CustomErrorMessage
 # Auth
-from auth import get_current_user_sub, has_user_read_update_perms, is_admin
+from auth import get_current_user_sub, has_user_read_update_perms, is_admin, get_current_user
 from utils import serialize, validate_id_querystring
 # utils
 from database import session_scope
-from utils import validate_phone_number, get_current_user
+from utils import validate_phone_number
 import boto3
 import random
 from models.StripeApiClient import StripeApiClient
@@ -130,7 +130,7 @@ def upload_profile_picture_post(file_upload: PictureSchemaIn, user_id: int, curr
 
     """
     with session_scope() as session:
-        current_user = get_current_user(current_user_sub,session)
+        current_user = get_current_user(current_user_sub, session)
         # initialize s3 client
         s3_client = S3StaticFileClient()
         # generate presigned url
