@@ -66,24 +66,21 @@ def auth_user(access_token):
     return user
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+def get_current_user_sub(token: str = Depends(oauth2_scheme)):
     # try and authenticate user with access token
-    with session_scope() as session:
-        user = auth_user(token)
-        if user is None:
-            raise HTTPException(401)
-        try:
-            cognito_sub = [x['Value']
-                        for x in user['UserAttributes'] if x['Name'] == 'sub'][0]
-            user = session.query(User).filter_by(
-                cognito_sub=cognito_sub).first()
-        except Exception as e:
-            logging.error(f"Couldnt get user {e}")
-            raise HTTPException(500)
-        if user is None:
-            logging.info(f"Couldnt get user with sub {cognito_sub}")
-            raise HTTPException(401, "No user found")
-        return user
+    user = auth_user(token)
+    if user is None:
+        raise HTTPException(401)
+    try:
+        cognito_sub = [x['Value']
+                       for x in user['UserAttributes'] if x['Name'] == 'sub'][0]
+    except Exception as e:
+        logging.error(f"Couldnt get user {e}")
+        raise HTTPException(500)
+    if user is None:
+        logging.info(f"Couldnt get user with sub {cognito_sub}")
+        raise HTTPException(401, "No user found")
+    return cognito_sub
 
 
 def get_current_rider(token: str = Depends(oauth2_scheme)):
@@ -94,7 +91,7 @@ def get_current_rider(token: str = Depends(oauth2_scheme)):
             raise HTTPException(401)
         try:
             cognito_sub = [x['Value']
-                        for x in user['UserAttributes'] if x['Name'] == 'sub'][0]
+                           for x in user['UserAttributes'] if x['Name'] == 'sub'][0]
             user = session.query(Rider).filter_by(
                 cognito_sub=cognito_sub).first()
         except Exception as e:

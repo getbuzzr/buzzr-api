@@ -9,8 +9,8 @@ from models.CustomErrorMessage import CustomErrorMessage, AddressErrorMessageEnu
 # Schemas
 from schemas.AddressSchema import AddressSchemaIn, AddressSchemaOut, AddressSchemaPut
 # Auth
-from auth import get_current_user
-from utils import serialize
+from auth import get_current_user_sub
+from utils import serialize, get_current_user
 # utils
 from database import session_scope
 import requests
@@ -24,7 +24,7 @@ MAX_TIME_SECONDS = 420
 
 
 @router.get('/location_is_serviceable')
-def location_is_serviceable(latitude: float, longitude: float, current_user: User = Depends(get_current_user)):
+def location_is_serviceable(latitude: float, longitude: float, current_user_sub: User = Depends(get_current_user_sub)):
     seconds_away_from_hq = get_seconds_away_from_hq(latitude, longitude)
     return {"is_serviceable": seconds_away_from_hq < MAX_TIME_SECONDS}
 
@@ -80,21 +80,23 @@ def check_address_exists(address, list_of_created_addresses):
 
 
 @router.get('/{address_id}/delivery_charge')
-def get_addresses_delivery_fee(address_id: int, current_user: User = Depends(get_current_user)):
+def get_addresses_delivery_fee(address_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     return calculate_address_delivery_fee(address_id)
 
 
 @router.get('', response_model=List[AddressSchemaOut])
-def get_addresses(current_user: User = Depends(get_current_user)):
+def get_addresses(current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         addresses = session.query(Address).filter_by(
             user_id=current_user.id, status=AddressStatusEnum.active).order_by(Address.date_created.desc()).all()
         return [serialize(x) for x in addresses]
 
 
 @router.delete('/{address_id}')
-def delete_address(address_id: int, current_user: User = Depends(get_current_user)):
+def delete_address(address_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         addresses = session.query(Address).filter_by(
             user_id=current_user.id).order_by(Address.date_created.desc()).all()
         if len(addresses) == 0:
@@ -119,14 +121,15 @@ def delete_address(address_id: int, current_user: User = Depends(get_current_use
 
 
 @router.post('', response_model=AddressSchemaOut)
-def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(get_current_user)):
+def post_addresses(post_address: AddressSchemaIn, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         # check to see if the name already exists
         user_addresses = session.query(Address).filter_by(
             user_id=current_user.id, status=AddressStatusEnum.active).all()
         # create new address
         new_address = Address(name=post_address.name, user_id=current_user.id, street_address=post_address.street_address, apartment_number=post_address.apartment_number, buzzer=post_address.buzzer, postal_code=post_address.postal_code,
-                            province=post_address.province, city=post_address.city, country=post_address.country, additional_instructions=post_address.additional_instructions, delivery_preference=post_address.delivery_preference, latitude=post_address.latitude, longitude=post_address.longitude)
+                              province=post_address.province, city=post_address.city, country=post_address.country, additional_instructions=post_address.additional_instructions, delivery_preference=post_address.delivery_preference, latitude=post_address.latitude, longitude=post_address.longitude)
         if post_address.name in [x.name for x in user_addresses]:
             raise HTTPException(status.HTTP_409_CONFLICT,
                                 "This name is already taken")
@@ -134,7 +137,8 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
         if check_address_exists(new_address, user_addresses):
             raise HTTPException(status.HTTP_409_CONFLICT,
                                 "This address already exists")
-        new_address.google_share_url = generate_google_maps_share_url(new_address)
+        new_address.google_share_url = generate_google_maps_share_url(
+            new_address)
         seconds_away_from_hq = get_seconds_away_from_hq(
             new_address.latitude, new_address.longitude)
         new_address.seconds_away_from_hq = seconds_away_from_hq
@@ -171,8 +175,9 @@ def post_addresses(post_address: AddressSchemaIn, current_user: User = Depends(g
 
 
 @router.put("/{address_id}", response_model=AddressSchemaOut)
-def put_address(address_put: AddressSchemaPut, address_id: int, current_user: User = Depends(get_current_user)):
+def put_address(address_put: AddressSchemaPut, address_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         # if you change location, you must add lat/lng
         if (address_put.street_address or address_put.city or address_put.country) is not None and None in (address_put.latitude, address_put.longitude):
             raise HTTPException(status.HTTP_400_BAD_REQUEST,

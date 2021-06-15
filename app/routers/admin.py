@@ -21,7 +21,7 @@ from schemas.AdminSchema import AdminOrderStatusSchemaEdit, AdminOrderSchemaEdit
 from schemas.ProductSchema import ProductSchemaIn, ProductTaxSchemaIn
 from schemas.ProductTagSchema import ProductTagSchemaIn
 # Auth
-from auth import get_current_user, is_admin
+from auth import get_current_user_sub, is_admin
 from utils import serialize, send_push_sns, generate_apple_order_push_payload
 # utils
 from database import session_scope
@@ -31,7 +31,7 @@ router = APIRouter()
 
 @router.get('/orders', response_model=List[OrderSchemaOut], include_in_schema=False)
 @is_admin
-def get_orders(status: str = None, current_user: User = Depends(get_current_user)):
+def get_orders(status: str = None, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
         if status:
             orders = session.query(Order).filter_by(status=status).order_by(

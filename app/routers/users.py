@@ -9,11 +9,11 @@ from models.User import User, UserRoleEnum, REFERRAL_USER_CREDIT
 from models.S3StaticFileClient import S3StaticFileClient
 from models.CustomErrorMessage import UserErrorMessageEnum, CustomErrorMessage
 # Auth
-from auth import get_current_user, has_user_read_update_perms, is_admin
+from auth import get_current_user_sub, has_user_read_update_perms, is_admin
 from utils import serialize, validate_id_querystring
 # utils
 from database import session_scope
-from utils import validate_phone_number
+from utils import validate_phone_number, get_current_user
 import boto3
 import random
 from models.StripeApiClient import StripeApiClient
@@ -23,11 +23,12 @@ router = APIRouter()
 
 
 @router.post("/referral_code")
-def post_referral_code(referral_code: ReferralCodeIn, current_user: User = Depends(get_current_user)):
+def post_referral_code(referral_code: ReferralCodeIn, current_user_sub: User = Depends(get_current_user_sub)):
     """
     Apply referral code to user
     """
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         # user already referred
         if current_user.referrer_id is not None:
             raise HTTPException(status.HTTP_403_FORBIDDEN, CustomErrorMessage(
@@ -45,22 +46,26 @@ def post_referral_code(referral_code: ReferralCodeIn, current_user: User = Depen
 
 
 @router.get('', response_model=UserSchemaOut)
-def retrieve_user_data(current_user: User = Depends(get_current_user)):
+def retrieve_user_data(current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         return serialize(current_user)
 
 
 @router.get('/get_payment_methods', response_model=List[UserPaymentMethods])
-def get_payment_methods(current_user: User = Depends(get_current_user)):
-    payment_methods = StripeApiClient(
-        'cad').get_saved_payment_info(current_user.stripe_id)
-    return payment_methods
+def get_payment_methods(current_user_sub: User = Depends(get_current_user_sub)):
+    with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
+        payment_methods = StripeApiClient(
+            'cad').get_saved_payment_info(current_user.stripe_id)
+        return payment_methods
 
 
 @router.put('')
-def edit_user(user_put_body: UserSchemaPut, current_user: User = Depends(get_current_user)):
+def edit_user(user_put_body: UserSchemaPut, current_user_sub: User = Depends(get_current_user_sub)):
     # iterate through all the attributes of the usereditschema
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         for key, value in user_put_body.dict().items():
             # If key is being edited
             if value is not None:
@@ -71,8 +76,9 @@ def edit_user(user_put_body: UserSchemaPut, current_user: User = Depends(get_cur
 
 
 @router.put('/add_phone_number')
-def add_user_phone(user_phone_number_put: UserPhoneNumberPut, current_user: User = Depends(get_current_user)):
+def add_user_phone(user_phone_number_put: UserPhoneNumberPut, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         phone_number = user_phone_number_put.phone_number
         country_code = user_phone_number_put.phone_country_code
         full_phone = f"+{country_code}{phone_number}"
@@ -103,8 +109,9 @@ def add_user_phone(user_phone_number_put: UserPhoneNumberPut, current_user: User
 
 
 @router.get('/confirm_phone_number')
-def confirm_phone(verification_code: str = None, current_user: User = Depends(get_current_user)):
+def confirm_phone(verification_code: str = None, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         if verification_code is None:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 "Could not get verification_code in querystring")
@@ -117,12 +124,13 @@ def confirm_phone(verification_code: str = None, current_user: User = Depends(ge
 
 
 @router.post("/upload_profile_picture", response_model=S3PresignedUrlSchemaOut)
-def upload_profile_picture_post(file_upload: PictureSchemaIn, user_id: int, current_user: User = Depends(get_current_user)):
+def upload_profile_picture_post(file_upload: PictureSchemaIn, user_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     """Generate presigned s3 url for user to user to use to write to s3
     @returns sting: presigned s3 url
 
     """
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub,session)
         # initialize s3 client
         s3_client = S3StaticFileClient()
         # generate presigned url

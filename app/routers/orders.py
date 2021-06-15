@@ -19,8 +19,8 @@ from routers.addresses import calculate_address_delivery_fee
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut, OrderTipEditSchemaIn,  OrderFeedbackSchemaIn
 # Auth
-from auth import get_current_user
-from utils import serialize, send_push_sns, generate_apple_order_push_payload
+from auth import get_current_user_sub
+from utils import serialize, send_push_sns, generate_apple_order_push_payload, get_current_user
 # utils
 from database import session_scope
 import datetime
@@ -62,8 +62,9 @@ def check_promo_code(order, session):
 
 
 @router.delete('')
-def delete_orders(current_user: User = Depends(get_current_user)):
+def delete_orders(current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         order = session.query(Order).filter_by(
             user_id=current_user.id, status=OrderStatusEnum.checking_out).first()
         if order is None:
@@ -78,8 +79,9 @@ def delete_orders(current_user: User = Depends(get_current_user)):
 
 
 @router.get('', response_model=List[OrderSchemaOut])
-def get_orders(current_user: User = Depends(get_current_user)):
+def get_orders(current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         orders = session.query(Order).filter_by(
             user_id=current_user.id).filter(Order.status != OrderStatusEnum.checking_out).order_by(Order.date_created.desc()).all()
         orders_to_return = []
@@ -95,8 +97,9 @@ def get_orders(current_user: User = Depends(get_current_user)):
 
 
 @router.get('/{order_id}', response_model=OrderSchemaOut)
-def get_order_id(order_id: int, current_user: User = Depends(get_current_user)):
+def get_order_id(order_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         order = session.query(Order).filter_by(
             user_id=current_user.id, id=order_id).first()
         if order is None:
@@ -111,8 +114,9 @@ def get_order_id(order_id: int, current_user: User = Depends(get_current_user)):
 
 
 @router.put('/{order_id}/feedback')
-def put_order_feedback(new_order_feedback: OrderFeedbackSchemaIn, order_id: int, current_user: User = Depends(get_current_user)):
+def put_order_feedback(new_order_feedback: OrderFeedbackSchemaIn, order_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         order = session.query(Order).filter(
             and_(Order.user_id == current_user.id, Order.id == order_id)).filter(Order.status.in_([OrderStatusEnum.failed, OrderStatusEnum.complete])).first()
         if order is None:
@@ -126,7 +130,7 @@ def put_order_feedback(new_order_feedback: OrderFeedbackSchemaIn, order_id: int,
 
 
 # @router.put('/{order_id}/tip_amount', response_model=OrderTipEditSchemaOut)
-# def put_order_tip(new_order_tip: OrderTipEditSchemaIn, order_id: int, current_user: User = Depends(get_current_user), session: Session = Depends(get_db)):
+# def put_order_tip(new_order_tip: OrderTipEditSchemaIn, order_id: int, current_user_sub: User = Depends(get_current_user_sub), session: Session = Depends(get_db)):
 #     order = session.query(Order).filter_by(
 #         user_id=current_user.id, id=order_id, status=OrderStatusEnum.checking_out).first()
 #     if order is None:
@@ -147,8 +151,9 @@ def put_order_feedback(new_order_feedback: OrderFeedbackSchemaIn, order_id: int,
 
 
 @router.post('', response_model=OrderSchemaCreateOut)
-def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_user)):
+def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         if current_user.is_phone_verified is False:
             raise HTTPException(status.HTTP_403_FORBIDDEN,
                                 CustomErrorMessage(
@@ -324,11 +329,12 @@ def post_orders(order: OrderSchemaIn, current_user: User = Depends(get_current_u
 
 
 @ router.put('/{order_id}/confirm')
-def post_orders(order_id: int, current_user: User = Depends(get_current_user)):
+def post_orders(order_id: int, current_user_sub: User = Depends(get_current_user_sub)):
     """This function is only used when a user has more credit then cost.
     In this case we completely forego stripe and use all of the customer's credit
     """
     with session_scope() as session:
+        current_user = get_current_user(current_user_sub, session)
         targeted_order = session.query(Order).filter_by(
             cost=0, user_id=current_user.id, status=OrderStatusEnum.checking_out).filter(Order.credit_used > 0).first()
         if targeted_order is None:

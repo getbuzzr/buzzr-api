@@ -14,7 +14,7 @@ from models.Search import Search
 from schemas.ProductSchema import ProductSchemaOut
 from schemas.SearchSchema import SearchSchemaOut
 # Auth
-from auth import get_current_user
+from auth import get_current_user_sub
 from utils import serialize
 # utils
 from database import session_scope
