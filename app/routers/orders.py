@@ -120,7 +120,6 @@ def put_order_feedback(new_order_feedback: OrderFeedbackSchemaIn, order_id: int,
             and_(Order.user_id == current_user.id, Order.id == order_id)).filter(Order.status.in_([OrderStatusEnum.failed, OrderStatusEnum.complete])).first()
         if order is None:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                                r
                                 CustomErrorMessage(
                                     OrderErrorMessageEnum.NO_FEEDBACK_ALLOWED, error_message="Cant leave feedback for offer", error_detail="This is not the user's order or order doesnt have failed/complete status").jsonify())
         order.feedback = new_order_feedback.feedback
