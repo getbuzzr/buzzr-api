@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table, Boolean
 from database import Base
 import logging
 import datetime
@@ -12,3 +12,4 @@ class ProductTag(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100))
+    is_featured = Column(Boolean, default=False)
