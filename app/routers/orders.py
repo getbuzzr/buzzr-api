@@ -217,14 +217,14 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
             if promo_code_targeted is None:
                 raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                     CustomErrorMessage(
-                                        PromoCodeErrorMessage.NOT_VALID, error_message="This promocode is not valid or has expired").jsonify())
+                                        PromoCodeErrorMessage.PROMO_NOT_VALID, error_message="This promocode is not valid or has expired").jsonify())
             # check to see if user has already used the promo code
             offer_with_promocode_applied = session.query(Order).filter_by(
                 user_id=current_user.id, promo_code_id=promo_code_targeted.id).first()
             if offer_with_promocode_applied:
                 raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                     CustomErrorMessage(
-                                        PromoCodeErrorMessage.ALREADY_REDEEMED, error_message="This promo code has already been redeemed by this user").jsonify())
+                                        PromoCodeErrorMessage.PROMO_ALREADY_REDEEMED, error_message="This promo code has already been redeemed by this user").jsonify())
             promo_code_credit = promo_code_targeted.credit
         # check to see if the address exists
         # calculate cost and tax amount
