@@ -179,7 +179,7 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
             status=OrderStatusEnum.checking_out, user_id=current_user.id).first()
         if preexisting_order:
             # if preexisting order has a promo code, remove from Promocode model and add num_redeem_allowed
-            check_promo_code()
+            check_promo_code(preexisting_order, session)
             re_add_stock(preexisting_order, session)
             session.delete(preexisting_order)
         # if address is specified, check if it exists
@@ -316,7 +316,7 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
                 "stripe_payment_intent_secret": payment_intent.client_secret if payment_intent else None,
                 'stripe_customer_id': current_user.stripe_id,
                 'stripe_ephemeral_key': stripe_ephemeral_key.secret if stripe_ephemeral_key else None,
-                'promo_code': promo_code_targeted.promo_code if promo_code_targeted else None,
+                'promo_code_credit': promo_code_credit if promo_code_credit else None,
                 'credit_used': credit_used}
 
 
