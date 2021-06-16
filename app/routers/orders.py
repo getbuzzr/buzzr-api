@@ -265,22 +265,25 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
         delivery_fee = calculated_delivery_fee['delivery_charge'] - \
             calculated_delivery_fee['discount']
         total_cost += delivery_fee
-        total_cost += order.tip_amount
         # check to see if user has credit
+        # user is using a valid promo code
+        if promo_code_credit:
+            if promo_code_credit > total_cost:
+                promo_code_credit = total_cost
+                total_cost = 0
+            else:
+                total_cost -= promo_code_credit
+        total_cost += order.tip_amount
         credit_used = 0
-        if current_user.credit > 0:
+        if current_user.credit > 0 and total_cost > 0:
             if current_user.credit > total_cost:
                 credit_used = total_cost
                 total_cost = 0
             else:
                 total_cost -= current_user.credit
                 credit_used = current_user.credit
-        # user is using a valid promo code
-        if promo_code_credit:
-            total_cost -= promo_code_credit
-            if total_cost < 0:
-                total_cost = 0
-        # If credit is larger then cost, dont return payment_intent/stripe ephemeral key
+
+        # If credit / promocodis larger then cost, dont return payment_intent/stripe ephemeral key
         if total_cost == 0:
             payment_intent = None
             stripe_ephemeral_key = None
