@@ -60,6 +60,26 @@ def check_promo_code(order, session):
             session.commit()
 
 
+def generate_order_response(order):
+    """Generates and serializes order response for order schema
+
+    Args:
+        order ([Order]): This is the order
+
+    Returns:
+        OrderSchemaOut[orderschema]: Order schema
+    """
+    new_order = serialize(order)
+    new_order['products_ordered'] = [
+        serialize(x) for x in order.products_ordered]
+    if order.address:
+        new_order['address'] = serialize(order.address)
+    if order.promo_code_id:
+        new_order['applied_promo_code'] = order.promo_code.promo_code
+        new_order['promo_code_credit'] = order.promo_code.credit
+    return new_order
+
+
 @router.delete('')
 def delete_orders(current_user_sub: User = Depends(get_current_user_sub)):
     with session_scope() as session:
@@ -86,11 +106,7 @@ def get_orders(current_user_sub: User = Depends(get_current_user_sub)):
         orders_to_return = []
         # serialize with products to order
         for order in orders:
-            new_order = serialize(order)
-            new_order['products_ordered'] = [
-                serialize(x) for x in order.products_ordered]
-            if order.address:
-                new_order['address'] = serialize(order.address)
+            new_order = generate_order_response(order)
             orders_to_return.append(new_order)
         return orders_to_return
 
@@ -104,11 +120,7 @@ def get_order_id(order_id: int, current_user_sub: User = Depends(get_current_use
         if order is None:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 "order doesnt exist or you do not have access")
-        new_order = serialize(order)
-        new_order['products_ordered'] = [
-            serialize(x) for x in order.products_ordered]
-        if order.address:
-            new_order['address'] = serialize(order.address)
+        new_order = generate_order_response(order)
         return new_order
 
 
@@ -317,6 +329,7 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
                 'stripe_customer_id': current_user.stripe_id,
                 'stripe_ephemeral_key': stripe_ephemeral_key.secret if stripe_ephemeral_key else None,
                 'promo_code_credit': promo_code_credit if promo_code_credit else None,
+                'applied_promo_code': order.promo_code if order.promo_code else None,
                 'credit_used': credit_used}
 
 

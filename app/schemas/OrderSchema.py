@@ -38,6 +38,7 @@ class OrderSchemaCreateOut(BaseModel):
     stripe_customer_id: str
     credit_used: int
     promo_code_credit: Optional[int]
+    applied_promo_code: Optional[str]
 
 
 class OrderSchemaOut(BaseModel):
@@ -65,6 +66,7 @@ class OrderSchemaOut(BaseModel):
     subtotal: int
     credit_used: int
     promo_code_credit: Optional[int]
+    applied_promo_code: Optional[str]
 
 
 class OrderFeedbackSchemaIn(BaseModel):
