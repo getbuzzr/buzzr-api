@@ -10,7 +10,7 @@ from models.ProductTag import ProductTag
 from sqlalchemy import and_
 # schemas
 from schemas.ProductSchema import ProductSchemaOut
-from schemas.ProductTagSchema import ProductTagOut
+from schemas.ProductTagSchema import ProductTagSchemaOut
 # Auth
 from utils import serialize
 # utils
@@ -20,7 +20,7 @@ import json
 router = APIRouter()
 
 
-@router.get('/featured', response_model=List[ProductTagOut])
+@router.get('/featured', response_model=List[ProductTagSchemaOut])
 def get_featured_tags():
     try:
         featured_tags = json.loads(
