@@ -25,7 +25,7 @@ from database import session_scope
 import datetime
 import json
 
-MIN_ORDER_THRESHOLD = 50
+MIN_ORDER_THRESHOLD = 100
 
 router = APIRouter()
 
@@ -344,7 +344,7 @@ def post_orders(order_id: int, current_user_sub: User = Depends(get_current_user
     with session_scope() as session:
         current_user = get_current_user(current_user_sub, session)
         targeted_order = session.query(Order).filter_by(
-            cost=0, user_id=current_user.id, status=OrderStatusEnum.checking_out).filter(Order.credit_used > 0).first()
+            cost=0, user_id=current_user.id, status=OrderStatusEnum.checking_out).filter(or_(Order.credit_used > 0, Order.promo_code_id != None)).first()
         if targeted_order is None:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 CustomErrorMessage(
