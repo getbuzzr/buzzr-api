@@ -76,7 +76,7 @@ def generate_order_response(order):
         new_order['address'] = serialize(order.address)
     if order.promo_code_id:
         new_order['applied_promo_code'] = order.promo_code.promo_code
-        new_order['promo_code_credit'] = order.promo_code.credit
+        new_order['promo_code_credit'] = order.promo_code_credit
     return new_order
 
 
@@ -302,6 +302,7 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
         # Link promo code if exists
         if promo_code_credit:
             new_order.promo_code_id = promo_code_targeted.id
+            new_order.promo_code_credit = promo_code_credit
             promo_code_targeted.num_redeems_allowed -= 1
             promo_code_targeted.orders.append(new_order)
         if payment_intent:

@@ -19,8 +19,8 @@ class OrderStatusEnum(str, enum.Enum):
     checking_out = "checking_out"
     paid = "paid"
     preparing = "preparing"
-    out_for_delivery = "out_for_delivery"
     arrived = "arrived"
+    out_for_delivery = "out_for_delivery"
     delivered = "delivered"
     complete = "complete"
     refunded = "refunded"
@@ -41,10 +41,10 @@ class Order(Base):
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     date_delivered = Column(DateTime)
     date_preparing = Column(DateTime)
+    date_arrived = Column(DateTime)
     date_out_for_delivery = Column(DateTime)
     date_complete = Column(DateTime)
     date_failed = Column(DateTime)
-    date_arrived = Column(DateTime)
     date_paid = Column(DateTime)
     tip_amount = Column(Integer, default=0)
     subtotal = Column(Integer)
@@ -65,3 +65,4 @@ class Order(Base):
     # This field is used to check if we have already sent a user a push notification that they are abandoning card
     is_user_abandoned_cart_notified = Column(Boolean,  default=False)
     promo_code_id = Column(Integer, ForeignKey('promo_code.id'), nullable=True)
+    promo_code_credit = Column(Integer)
