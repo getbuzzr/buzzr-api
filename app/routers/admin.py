@@ -18,7 +18,7 @@ import datetime
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut
 from schemas.AdminSchema import AdminOrderStatusSchemaEdit, AdminOrderSchemaEdit, StoreOpenSchema, NumRidersSchema
-from schemas.ProductSchema import ProductSchemaIn, ProductTaxSchemaIn
+from schemas.ProductSchema import ProductSchemaIn, ProductTaxSchemaIn, ProductBrandIn
 from schemas.ProductTagSchema import ProductTagSchemaIn
 # Auth
 from auth import get_current_user_sub, is_admin
@@ -235,6 +235,7 @@ def create_product(request: Request, product: ProductSchemaIn):
                               category_id=category_id,
                               department_id=department_id,
                               stock=product.stock,
+                              brand_name=product.brand_name,
                               tax=tax,
                               cost=product.cost.replace('.', ""),
                               image_url=f"https://static.getbuzzr.co/products/{product.photo_id}.jpg",
@@ -252,7 +253,6 @@ def create_tags(request: Request, product_tag_in: ProductTagSchemaIn):
         retool_key = request.headers['retool-auth-key']
         if retool_auth_key != retool_key:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
-        tags = product_tag_in.tags.split(',')
         product = session.query(Product).filter_by(
             name=product_tag_in.name).first()
         if product is None:
@@ -295,5 +295,23 @@ def create_tax(request: Request, product_tax_in: ProductTaxSchemaIn):
         if "g" in product_tax_in.tax.lower():
             tax += 5
         product.tax = tax
+        session.commit()
+        return status.HTTP_200_OK
+
+
+@router.post('/brand/add', include_in_schema=False)
+def create_brand(request: Request, product_brand_in: ProductBrandIn):
+    # allows retool to make postd
+    with session_scope() as session:
+        retool_auth_key = os.environ['RETOOL_AUTH_KEY']
+        retool_key = request.headers['retool-auth-key']
+        if retool_auth_key != retool_key:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
+        product = session.query(Product).filter(
+            Product.image_url.contains(product_brand_in.photo_id)).first()
+        if product is None:
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "No product found")
+        product.brand_name = product_brand_in.brand_name
         session.commit()
         return status.HTTP_200_OK

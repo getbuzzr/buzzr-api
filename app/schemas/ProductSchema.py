@@ -9,6 +9,11 @@ class ProductTags(BaseModel):
     name: str
 
 
+class ProductBrandIn(BaseModel):
+    photo_id: str
+    brand_name: str
+
+
 class ProductSchemaOut(BaseModel):
     """This schema is used to validate User api endpoint
     """
