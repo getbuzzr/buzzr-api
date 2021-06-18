@@ -7,7 +7,7 @@ from models.Department import Department
 from models.User import User
 from models.Product import Product, ProductStatusEnum, product_tags
 from models.ProductTag import ProductTag
-from sqlalchemy import and_, nullslast
+from sqlalchemy import and_
 # schemas
 from schemas.ProductSchema import ProductSchemaOut
 from schemas.ProductTagSchema import ProductTagSchemaOut
