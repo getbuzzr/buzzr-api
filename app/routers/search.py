@@ -33,6 +33,8 @@ def search(q: str = ""):
             Product.name.like(space_search)).all()
         products_initial = session.query(Product).filter(
             Product.name.like(initial_search)).all()
+        products_brand = session.query(Product).filter(
+            Product.brand_name.like(initial_search)).all()
         products = session.query(Product).filter(
             Product.name.like(search_term)).all()
         category = session.query(Category).filter(
@@ -45,7 +47,7 @@ def search(q: str = ""):
         tag_ids = [x.id for x in tags]
         products_with_tags = session.query(Product).join(product_tags).filter(
             product_tags.c.tag_id.in_(tag_ids)).all()
-        searched_items = products_initial + products_space + products + \
+        searched_items = products_initial + products_brand + products_space + products + \
             products_category + products_with_tags
         items_searched_unique = list(OrderedDict.fromkeys(searched_items))
         search = Search(search_term=q)

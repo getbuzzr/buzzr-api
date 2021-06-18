@@ -37,6 +37,7 @@ class Product(Base):
     name = Column(String(200))
     stock = Column(Integer)
     description = Column(String(300))
+    brand_name = Column(String(300))
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     department_id = Column(Integer, ForeignKey('department.id'))
     last_updated = Column(
