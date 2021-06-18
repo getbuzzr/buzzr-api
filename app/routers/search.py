@@ -53,7 +53,7 @@ def search(q: str = ""):
         search = Search(search_term=q)
         session.add(search)
         session.commit()
-        return [serialize(x) for x in items_searched_unique]
+        return [serialize(x) for x in items_searched_unique][:35]
 
 
 @router.get('/popular', response_model=List[SearchSchemaOut])
