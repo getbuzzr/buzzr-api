@@ -24,10 +24,6 @@ router = APIRouter()
 
 @router.get('', response_model=List[ProductSchemaOut])
 def search(q: str = ""):
-    if len(q) < 2:
-        raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
-                            "Your search must be  2 or more chars")
-    # prepare search term
     search_term = f"%{q}%"
     initial_search = f"{q}%"
     space_search = f"% {q} %"

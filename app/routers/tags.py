@@ -7,7 +7,7 @@ from models.Department import Department
 from models.User import User
 from models.Product import Product, ProductStatusEnum, product_tags
 from models.ProductTag import ProductTag
-from sqlalchemy import and_
+from sqlalchemy import and_, nullslast
 # schemas
 from schemas.ProductSchema import ProductSchemaOut
 from schemas.ProductTagSchema import ProductTagSchemaOut
@@ -28,7 +28,7 @@ def get_featured_tags():
     except:
         with session_scope() as session:
             featured_tags = [serialize(x)
-                             for x in session.query(ProductTag).filter_by(is_featured=True).all()]
+                             for x in session.query(ProductTag).filter_by(is_featured=True).order_by(ProductTag.order.asc()).all()]
             redis_client.set("featured_tags", json.dumps(
                 featured_tags), REDIS_TTL)
 
