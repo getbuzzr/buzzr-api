@@ -17,6 +17,7 @@ from utils import serialize
 from database import session_scope
 from caching import redis_client, REDIS_TTL
 import json
+import random
 router = APIRouter()
 
 
@@ -45,4 +46,6 @@ def get_tag_items(tag_id: int):
         with session_scope() as session:
             tag_products = session.query(Product).join(product_tags).filter(and_(
                 product_tags.c.tag_id == tag_id, Product.status == ProductStatusEnum.active)).all()[:10]
-            return [serialize(x) for x in tag_products]
+            products = [serialize(x) for x in tag_products]
+            random.shuffle(products)
+            return products
