@@ -28,7 +28,7 @@ def get_featured_tags():
     except:
         with session_scope() as session:
             featured_tags = [serialize(x)
-                             for x in session.query(ProductTag).filter_by(is_featured=True).all()]
+                             for x in session.query(ProductTag).filter_by(is_featured=True).order_by(ProductTag.order.asc()).all()]
             redis_client.set("featured_tags", json.dumps(
                 featured_tags), REDIS_TTL)
 
