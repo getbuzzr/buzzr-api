@@ -30,6 +30,5 @@ def session_scope():
         yield db
     except:
         db.rollback()
-        raise
     finally:
         db.close()
