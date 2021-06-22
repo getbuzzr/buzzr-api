@@ -12,7 +12,7 @@ class AddressSchemaIn(BaseModel):
     street_address: constr(min_length=3)
     apartment_number: Optional[str]
     buzzer: Optional[str]
-    postal_code: constr(min_length=6)
+    postal_code: constr(min_length=3)
     province: constr(min_length=2)
     country: constr(min_length=2)
     city: constr(min_length=2)
