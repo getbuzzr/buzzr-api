@@ -29,7 +29,7 @@ def get_departments():
     except:
         with session_scope() as session:
             departments = [serialize(x)
-                           for x in session.query(Department).all()]
+                           for x in session.query(Department).filter_by(is_active=True).all()]
             redis_client.set("departments", json.dumps(departments), REDIS_TTL)
 
     return departments
@@ -43,7 +43,7 @@ def get_department_categories(department_id: int):
     except:
         with session_scope() as session:
             categories = [serialize(x)
-                          for x in session.query(Category).all()]
+                          for x in session.query(Category).filter_by(department_id=department_id, is_active=True).all()]
             redis_client.set(
                 "department_{department_id}_catagories", json.dumps(categories), REDIS_TTL)
     return categories
