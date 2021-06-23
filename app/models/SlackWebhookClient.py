@@ -28,7 +28,7 @@ class SlackWebhookClient():
         """
 
         order_string = "- ".join(
-            [f"*Quantity:* {x.quantity}, *Product:* {x.product.name} \n" for x in items_ordered])
+            [f"*Quantity:* {x.quantity}, *Product:* {x.product.name} - {x.product.quantity} {x.product.unit}\n" for x in items_ordered])
         address_string = f"{user_address.street_address}"
         address_string = address_string + \
             f"\n *Preference:* {user_address.delivery_preference}"
@@ -41,7 +41,7 @@ class SlackWebhookClient():
         if user_address.additional_instructions:
             address_string = address_string + \
                 f"\n *Additional Instructions:* {user_address.additional_instructions} \n"
-        payload = f"{{\"text\":\"<!here> *New Order - {order_id}* \n *Name*:{user.first_name} {user.last_name} \n *Phone Number* : {user.phone_number} \n *Address Google Maps*: {user_address.google_share_url}\n*Address*: \n {address_string} *Items Ordered*\n- {order_string} \"}}"
+        payload = f"{{\"text\":\"<!here> *New Order - {order_id}* \n *Name*:{user.first_name} {user.last_name} \n *Phone Number* : {user.phone_number} \n *Address Google Maps*: {user_address.google_share_url}\n*Address*:  {address_string}\n *Items Ordered*\n- {order_string} \"}}"
         headers = {
             'Content-Type': "application/json",
         }
