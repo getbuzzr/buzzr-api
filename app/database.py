@@ -24,11 +24,12 @@ def get_db():
 
 
 @contextmanager
-def session_scope():
+def session_scope(*args, **kwds):
     try:
         db = SessionLocal()
         yield db
-    except:
+    except Exception as e:
         db.rollback()
+        raise e
     finally:
         db.close()
