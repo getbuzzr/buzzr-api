@@ -202,6 +202,9 @@ def create_product(request: Request, product: ProductSchemaIn):
         retool_key = request.headers['retool-auth-key']
         if retool_auth_key != retool_key:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
+        if session.query(Product).filter_by(name=product.name).first():
+            raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                "Product already added")
         department = session.query(Department).filter_by(
             name=product.department).first()
         # create department
