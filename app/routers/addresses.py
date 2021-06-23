@@ -20,7 +20,7 @@ import urllib.parse
 router = APIRouter()
 
 
-MAX_TIME_SECONDS = 500
+MAX_TIME_SECONDS = 600
 
 
 @router.get('/location_is_serviceable')
