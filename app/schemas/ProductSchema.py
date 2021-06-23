@@ -48,6 +48,7 @@ class ProductSchemaIn(BaseModel):
     photo_id: str
     unit: ProductUnitEnum
     shelf_number: Optional[int]
+    brand_name: str
 
 
 class ProductTaxSchemaIn(BaseModel):
