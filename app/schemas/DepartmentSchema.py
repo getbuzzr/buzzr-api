@@ -8,4 +8,5 @@ class DepartmentSchemaOut(BaseModel):
     """
     picture_url: Optional[str]
     name: str
+    order: Optional[int]
     id: int

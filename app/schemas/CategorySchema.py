@@ -8,4 +8,5 @@ class CategorySchemaOut(BaseModel):
     """
     name: str
     department_id: int
+    order: Optional[int]
     id: int
