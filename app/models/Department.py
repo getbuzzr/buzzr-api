@@ -17,3 +17,4 @@ class Department(Base):
                        server_default="1", nullable=False)
     categories = relationship(
         'Category', backref=backref('department'))
+    order = Column(Integer)

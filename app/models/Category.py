@@ -17,3 +17,4 @@ class Category(Base):
     department_id = Column(Integer, ForeignKey('department.id'))
     products = relationship(
         'Product', backref=backref('category'))
+    order = Column(Integer)
