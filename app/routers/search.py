@@ -32,7 +32,7 @@ def search(q: str = ""):
         products_space = session.query(Product).filter(
             Product.name.like(space_search)).all()
         products_initial = session.query(Product).filter(
-            Product.name.like(initial_search)).all()
+            Product.search_term.like(initial_search)).all()
         products_brand = session.query(Product).filter(
             Product.brand_name.like(initial_search)).all()
         products = session.query(Product).filter(

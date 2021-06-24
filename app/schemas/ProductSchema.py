@@ -14,6 +14,11 @@ class ProductBrandIn(BaseModel):
     brand_name: str
 
 
+class ProductSearchIn(BaseModel):
+    photo_id: str
+    search_term: str
+
+
 class ProductSchemaOut(BaseModel):
     """This schema is used to validate User api endpoint
     """
@@ -49,6 +54,8 @@ class ProductSchemaIn(BaseModel):
     unit: ProductUnitEnum
     shelf_number: Optional[int]
     brand_name: Optional[str]
+    search_term: str
+    tags: str
 
 
 class ProductTaxSchemaIn(BaseModel):

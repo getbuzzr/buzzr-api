@@ -41,7 +41,7 @@ class SlackWebhookClient():
         if user_address.additional_instructions:
             address_string = address_string + \
                 f"\n *Additional Instructions:* {user_address.additional_instructions} \n"
-        payload = f"{{\"text\":\"<!here> *New Order - {order_id}* \n *Name*:{user.first_name} {user.last_name} \n *Phone Number* : {user.phone_number} \n *Address Google Maps*: {user_address.google_share_url}\n*Address*:  {address_string}\n *Items Ordered*\n- {order_string} \"}}"
+        payload = f"{{\"text\":\"<!here> *New Order - {order_id}* \n *Name*:{user.first_name} {user.last_name} \n *Phone Number* : <tel:+{user.phone_country_code}{user.phone_number}> \n *Address Google Maps*: {user_address.google_share_url}\n*Address*:  {address_string}\n *Items Ordered*\n- {order_string} \"}}"
         headers = {
             'Content-Type': "application/json",
         }

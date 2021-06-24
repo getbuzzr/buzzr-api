@@ -18,7 +18,7 @@ import datetime
 # Schemas
 from schemas.OrderSchema import OrderSchemaOut, OrderSchemaIn, OrderSchemaCreateOut
 from schemas.AdminSchema import AdminOrderStatusSchemaEdit, AdminOrderSchemaEdit, StoreOpenSchema, NumRidersSchema
-from schemas.ProductSchema import ProductSchemaIn, ProductTaxSchemaIn, ProductBrandIn
+from schemas.ProductSchema import ProductSchemaIn, ProductTaxSchemaIn, ProductBrandIn, ProductSearchIn
 from schemas.ProductTagSchema import ProductTagSchemaIn
 # Auth
 from auth import get_current_user_sub, is_admin
@@ -202,9 +202,6 @@ def create_product(request: Request, product: ProductSchemaIn):
         retool_key = request.headers['retool-auth-key']
         if retool_auth_key != retool_key:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
-        if session.query(Product).filter_by(name=product.name).first():
-            raise HTTPException(status.HTTP_400_BAD_REQUEST,
-                                "Product already added")
         department = session.query(Department).filter_by(
             name=product.department).first()
         # create department
@@ -232,37 +229,40 @@ def create_product(request: Request, product: ProductSchemaIn):
         if "g" in product.tax.lower():
             tax += 5
         product.cost.replace('.', '')
-        new_product = Product(name=product.name,
-                              quantity=product.quantity,
-                              description=product.description,
-                              category_id=category_id,
-                              department_id=department_id,
-                              stock=product.stock,
-                              brand_name=product.brand_name,
-                              tax=tax,
-                              cost=product.cost.replace('.', ""),
-                              image_url=f"https://static.getbuzzr.co/products/{product.photo_id}.jpg",
-                              unit=product.unit.lower(),
-                              shelf_number=product.shelf_number)
-        session.add(new_product)
+        existing_product = session.query(Product).filter(
+            Product.image_url.contains(product.photo_id)).first()
+        if existing_product:
+            existing_product.name = product.name
+            existing_product.quantity = product.quantity
+            existing_product.description = product.description
+            existing_product.category_id = category_id
+            existing_product.department_id = department_id
+            existing_product.brand_name = product.brand_name
+            existing_product.tax = tax
+            existing_product.cost = product.cost
+            existing_product.image_url = f"https://static.getbuzzr.co/products/{product.photo_id}.jpg"
+            existing_product.unit = product.unit.lower()
+            existing_product.shelf_number = product.shelf_number
+            existing_product.search_term = product.search_term
+            product_targeted = existing_product
+        else:
+            new_product = Product(name=product.name,
+                                  quantity=product.quantity,
+                                  description=product.description,
+                                  category_id=category_id,
+                                  department_id=department_id,
+                                  stock=product.stock,
+                                  brand_name=product.brand_name,
+                                  tax=tax,
+                                  cost=product.cost.replace('.', ""),
+                                  image_url=f"https://static.getbuzzr.co/products/{product.photo_id}.jpg",
+                                  unit=product.unit.lower(),
+                                  search_term=product.search_term,
+                                  shelf_number=product.shelf_number)
+            session.add(new_product)
+            product_targeted = new_product
         session.commit()
-
-
-@router.post('/tags/create', include_in_schema=False)
-def create_tags(request: Request, product_tag_in: ProductTagSchemaIn):
-    with session_scope() as session:
-        # allows retool to make post
-        retool_auth_key = os.environ['RETOOL_AUTH_KEY']
-        retool_key = request.headers['retool-auth-key']
-        if retool_auth_key != retool_key:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
-        product = session.query(Product).filter_by(
-            name=product_tag_in.name).first()
-        if product is None:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, "No product found")
-
-        for tag in tags:
+        for tag in product.tags:
             tag_targeted = session.query(
                 ProductTag).filter_by(name=tag).first()
             if tag_targeted is None:
@@ -271,50 +271,9 @@ def create_tags(request: Request, product_tag_in: ProductTagSchemaIn):
                 session.commit()
                 tag_targeted = new_tag
 
-            if tag_targeted in product.tags:
+            if tag_targeted in product_targeted.tags:
                 continue
 
-            product.tags.append(tag_targeted)
-        session.commit()
-        return status.HTTP_200_OK
-
-
-@router.post('/tax/create', include_in_schema=False)
-def create_tax(request: Request, product_tax_in: ProductTaxSchemaIn):
-    # allows retool to make post
-    with session_scope() as session:
-        retool_auth_key = os.environ['RETOOL_AUTH_KEY']
-        retool_key = request.headers['retool-auth-key']
-        if retool_auth_key != retool_key:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
-        product = session.query(Product).filter(
-            Product.image_url.contains(product_tax_in.photo_id)).first()
-        if product is None:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, "No product found")
-        tax = 0
-        if "p" in product_tax_in.tax.lower():
-            tax += 7
-        if "g" in product_tax_in.tax.lower():
-            tax += 5
-        product.tax = tax
-        session.commit()
-        return status.HTTP_200_OK
-
-
-@router.post('/brand/add', include_in_schema=False)
-def create_brand(request: Request, product_brand_in: ProductBrandIn):
-    # allows retool to make postd
-    with session_scope() as session:
-        retool_auth_key = os.environ['RETOOL_AUTH_KEY']
-        retool_key = request.headers['retool-auth-key']
-        if retool_auth_key != retool_key:
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "You cant do this")
-        product = session.query(Product).filter(
-            Product.image_url.contains(product_brand_in.photo_id)).first()
-        if product is None:
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, "No product found")
-        product.brand_name = product_brand_in.brand_name
-        session.commit()
+            product_targeted.tags.append(tag_targeted)
+            session.commit()
         return status.HTTP_200_OK
