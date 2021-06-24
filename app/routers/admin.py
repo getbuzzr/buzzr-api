@@ -239,7 +239,7 @@ def create_product(request: Request, product: ProductSchemaIn):
             existing_product.department_id = department_id
             existing_product.brand_name = product.brand_name
             existing_product.tax = tax
-            existing_product.cost = product.cost
+            existing_product.cost = product.cost.replace('.', "")
             existing_product.image_url = f"https://static.getbuzzr.co/products/{product.photo_id}.jpg"
             existing_product.unit = product.unit.lower()
             existing_product.shelf_number = product.shelf_number
