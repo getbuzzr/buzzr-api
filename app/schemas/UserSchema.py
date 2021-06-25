@@ -7,7 +7,7 @@ from datetime import datetime
 class UserSchemaIn(BaseModel):
     """This schema is used to validate User api endpoint
     """
-    first_name: constr(min_length=2)
+    first_name: constr(min_length=1)
     last_name: constr(min_length=1)
     cognito_sub: str
     phone_number: Optional[constr(min_length=8)]
@@ -20,7 +20,7 @@ class UserSchemaIn(BaseModel):
 class UserSchemaPut(BaseModel):
     """This schema is used for validating fields allowed for put
     """
-    first_name: Optional[constr(min_length=2)]
+    first_name: Optional[constr(min_length=1)]
     last_name: Optional[constr(min_length=1)]
     phone_number: Optional[constr(min_length=8)]
     apn_token: Optional[str]
