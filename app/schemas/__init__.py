@@ -10,3 +10,4 @@ from . import SearchSchema
 from . import AdminSchema
 from . import RiderSchema
 from . import ProductTagSchema
+from . import OpeningHoursSchema
