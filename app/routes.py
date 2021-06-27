@@ -3,7 +3,7 @@ import json
 from routers import users, departments, favorites, addresses, products, categories, orders, admin, addresses, search, riders, coupons, tags
 from utils import get_parameter_from_ssm
 from caching import redis_client, REDIS_TTL
-
+from schemas.OpeningHoursSchema import OpeningHoursSchemaOut
 api_router = APIRouter()
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(
@@ -35,7 +35,7 @@ async def health_check():
     return {"message": "success"}
 
 
-@api_router.get("/opening_hours")
+@api_router.get("/opening_hours",response_model=OpeningHoursSchemaOut)
 def get_opening_hours():
     try:
         opening_hours = json.loads(
