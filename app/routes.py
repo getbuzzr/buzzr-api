@@ -1,6 +1,8 @@
 from fastapi import APIRouter
-
+import json
 from routers import users, departments, favorites, addresses, products, categories, orders, admin, addresses, search, riders, coupons, tags
+from utils import get_parameter_from_ssm
+from caching import redis_client, REDIS_TTL
 
 api_router = APIRouter()
 api_router.include_router(users.router, prefix="/users", tags=["users"])
@@ -31,3 +33,15 @@ api_router.include_router(
 @api_router.get("/")
 async def health_check():
     return {"message": "success"}
+
+
+@api_router.get("/opening_hours")
+def get_opening_hours():
+    try:
+        opening_hours = json.loads(
+            redis_client.get(f"opening_hours").decode("utf-8"))
+    except:
+        opening_hours = json.loads(get_parameter_from_ssm("opening_hours"))
+        redis_client.set(
+            "opening_hours", json.dumps(opening_hours), 3600)
+    return opening_hours

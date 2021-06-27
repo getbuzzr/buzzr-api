@@ -170,12 +170,14 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
                                 CustomErrorMessage(
                                     OrderErrorMessageEnum.PHONE_NOT_VERIFIED, error_message="User phone number not verified", error_detail="User's phone must be verified before they place an order").jsonify())
         # make sure order has one of address/lat/lng
-        if order.address_id is None and order.latitude is None and (order.longitude is None or order.latitude is None):
+        if order.address_id is None and order.latitude is None and (order.loforngitude is None or order.latitude is None):
+            logging.error("address error")
             raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                 CustomErrorMessage(
                                     OrderErrorMessageEnum.ADDRESS_LAT_LNG_NOT_PRESENT, error_message="Order must have address of lat/lng").jsonify())
         # check to see if store is open
         if get_parameter_from_ssm('is_store_open') == "false":
+            logging.error("store not open")
             raise HTTPException(status.HTTP_406_NOT_ACCEPTABLE,
                                 CustomErrorMessage(
                                     OrderErrorMessageEnum.STORE_NOT_OPEN, error_message="Store is not open").jsonify())
@@ -199,10 +201,12 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
             address_delievered_to = session.query(
                 Address).get(order.address_id)
             if address_delievered_to is None:
+                logging.error("address not found")
                 raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                     CustomErrorMessage(
                                         OrderErrorMessageEnum.ADDRESS_DOESNT_EXIST, error_message="Address doesnt exist").jsonify())
             if address_delievered_to.is_serviceable == False:
+                logging.error("address not found")
                 raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                     CustomErrorMessage(
                                         OrderErrorMessageEnum.ADDRESS_NOT_SERVICEABLE, error_message="Must deliver to serviceable address").jsonify())
@@ -215,6 +219,7 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
                 PromoCode.promo_code == order.promo_code, PromoCode.valid_from < current_datetime, current_datetime < PromoCode.valid_until), PromoCode.num_redeems_allowed > 0).first()
 
             if promo_code_targeted is None:
+                logging.error("promo not valid")
                 raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                     CustomErrorMessage(
                                         PromoCodeErrorMessage.PROMO_NOT_VALID, error_message="This promocode is not valid or has expired").jsonify())
@@ -222,6 +227,7 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
             offer_with_promocode_applied = session.query(Order).filter_by(
                 user_id=current_user.id, promo_code_id=promo_code_targeted.id).first()
             if offer_with_promocode_applied:
+                logging.error("promo already redeemed")
                 raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                     CustomErrorMessage(
                                         PromoCodeErrorMessage.PROMO_ALREADY_REDEEMED, error_message="This promo code has already been redeemed by this user").jsonify())
