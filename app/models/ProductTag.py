@@ -14,3 +14,7 @@ class ProductTag(Base):
     name = Column(String(100))
     is_featured = Column(Boolean, default=False)
     order = Column(SmallInteger)
+    display_morning = Column(Boolean)
+    display_afternoon = Column(Boolean)
+    display_evening = Column(Boolean)
+    display_night = Column(Boolean)

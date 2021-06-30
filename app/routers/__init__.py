@@ -10,3 +10,4 @@ from . import search
 from . import riders
 from . import coupons
 from . import tags
+from . import recipes
