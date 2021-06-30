@@ -17,3 +17,5 @@ from . import Rider
 from . import Coupon
 from . import Search
 from . import PromoCode
+from . import Recipe
+from . import RecipeItem

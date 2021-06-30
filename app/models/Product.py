@@ -56,6 +56,8 @@ class Product(Base):
         'ProductTag', secondary=product_tags, backref=backref('product'))
     product_ordered = relationship(
         "ProductOrdered", backref=backref('product', lazy="select"))
+    recipe_item = relationship(
+        "RecipeItem", backref=backref('product', lazy="select"))
     search_term = Column(String(100))
 
     def serialize_product(self):

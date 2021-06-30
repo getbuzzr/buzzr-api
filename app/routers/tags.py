@@ -1,3 +1,5 @@
+from pytz import timezone, utc
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends, status
 import logging
 from typing import List, Optional
@@ -21,15 +23,38 @@ import random
 router = APIRouter()
 
 
+def get_pst_time():
+    date_format = '%m_%d_%Y_%H_%M_%S_%Z'
+    date = datetime.now(tz=utc)
+    date = date.astimezone(timezone('US/Pacific'))
+    return date
+
+
 @router.get('/featured', response_model=List[ProductTagSchemaOut])
 def get_featured_tags():
+    pst_time = get_pst_time()
     try:
         featured_tags = json.loads(
             redis_client.get("featured_tags").decode("utf-8"))
     except:
         with session_scope() as session:
+            # get time
+            pst_time = get_pst_time()
+            if pst_time.hour > 8 and pst_time.hour < 12:
+                tags = session.query(ProductTag).filter(and_(ProductTag.is_featured == True, ProductTag.display_morning == True)
+                                                        ).order_by(ProductTag.order.asc()).all()
+            elif pst_time.hour >= 12 and pst_time.hour < 18:
+                tags = session.query(ProductTag).filter(and_(ProductTag.is_featured == True, ProductTag.display_afternoon == True)
+                                                        ).order_by(ProductTag.order.asc()).all()
+            elif pst_time.hour >= 18 and pst_time.hour < 20:
+                tags = session.query(ProductTag).filter(and_(ProductTag.is_featured == True, ProductTag.display_evening == True)
+                                                        ).order_by(ProductTag.order.asc()).all()
+            else:
+                # else display night
+                tags = session.query(ProductTag).filter(and_(ProductTag.is_featured == True, ProductTag.display_night == True)
+                                                        ).order_by(ProductTag.order.asc()).all()
             featured_tags = [serialize(x)
-                             for x in session.query(ProductTag).filter_by(is_featured=True).order_by(ProductTag.order.asc()).all()]
+                             for x in tags]
             redis_client.set("featured_tags", json.dumps(
                 featured_tags), REDIS_TTL)
 
