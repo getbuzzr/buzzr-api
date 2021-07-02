@@ -21,5 +21,5 @@ class Recipe(Base):
     image_url = Column(String(300))
     recipe_items = relationship(
         "RecipeItem", backref=backref('recipe', lazy="select"))
-    preperation_time_seconds = Column(Integer)
+    preparation_time_seconds = Column(Integer)
     cooking_time_seconds = Column(Integer)
