@@ -10,7 +10,7 @@ class RecipeSummarySchemaOut(BaseModel):
     description: str
     image_url: str
     cooking_time_seconds: int
-    preperation_time_seconds: int
+    preparation_time_seconds: int
     date_created: datetime
 
 
@@ -20,6 +20,6 @@ class RecipeSchemaOut(BaseModel):
     description: str
     image_url: str
     cooking_time_seconds: int
-    preperation_time_seconds: int
+    preparation_time_seconds: int
     date_created: datetime
     recipe_items: List[RecipeItemSchemaOut]
