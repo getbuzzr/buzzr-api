@@ -9,4 +9,4 @@ class RecipeItemSchemaOut(BaseModel):
     id: int
     quantity: int
     product: ProductSchemaOut
-    recipe_item_type = RecipeItemTypeEnum
+    recipe_item_type: RecipeItemTypeEnum
