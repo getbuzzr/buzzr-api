@@ -14,12 +14,15 @@ class Recipe(Base):
 
     id = Column(Integer, primary_key=True)
     title = Column(String(200))
-    description = Column(Text)
+    instructions = Column(Text)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     last_updated = Column(
         DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
     image_url = Column(String(300))
     recipe_items = relationship(
         "RecipeItem", backref=backref('recipe', lazy="select"))
-    preparation_time_seconds = Column(Integer)
-    cooking_time_seconds = Column(Integer)
+    active_time_seconds = Column(Integer)
+    total_time_seconds = Column(Integer)
+    servings = Column(Integer)
+    calories = Column(Integer)
+    description = Column(String(500))
