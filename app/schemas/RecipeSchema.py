@@ -14,7 +14,6 @@ class RecipeSummarySchemaOut(BaseModel):
     date_created: datetime
     servings: int
     calories: int
-    instructions: str
 
 
 class RecipeSchemaOut(BaseModel):
