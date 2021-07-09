@@ -33,7 +33,7 @@ api_router.include_router(
 
 @api_router.get("/")
 async def health_check():
-    return {"message": "success"}
+    return {"message": "you're awesome"}
 
 
 @api_router.get("/opening_hours",response_model=OpeningHoursSchemaOut)
