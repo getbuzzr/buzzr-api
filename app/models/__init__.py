@@ -19,6 +19,6 @@ from . import Search
 from . import PromoCode
 from . import Recipe
 from . import RecipeItem
-from . import ProductOrdered
 from . import ProductPurchased
 from . import InventoryAdjustment
+from . import ProductSold
