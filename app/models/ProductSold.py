@@ -14,9 +14,9 @@ class ProductSold(Base):
 
     id = Column(Integer, primary_key=True)
     quantity = Column(SmallInteger)
-    date_sold = Column(DateTime, default=datetime.date.today)
+    date_sold = Column(DateTime, default=datetime.datetime.utcnow)
     order_id = Column(Integer, ForeignKey('order.id'))
     product_id = Column(Integer, ForeignKey('product.id'))
-    # price is in cents
-    sale_price = Column(Integer)
+    sale_price_cents = Column(Integer)
     tax = Column(Float,default=0)
+    discout = Column(Float,default=0)
