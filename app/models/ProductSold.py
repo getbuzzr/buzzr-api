@@ -19,4 +19,4 @@ class ProductSold(Base):
     product_id = Column(Integer, ForeignKey('product.id'))
     sale_price_cents = Column(Integer)
     tax = Column(Float,default=0)
-    discout = Column(Float,default=0)
+    percent_discount = Column(Integer, default=0)
