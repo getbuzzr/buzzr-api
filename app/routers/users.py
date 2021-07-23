@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 import logging
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from schemas.UserSchema import UserSchemaOut, UserSchemaIn, UserSchemaPut, UserPhoneNumberPut, UserPaymentMethods, ReferralCodeIn
+from schemas.UserSchema import UserSchemaOut, UserSchemaIn, UserSchemaPut, UserPhoneNumberPut, UserPaymentMethods, ReferralCodeIn, UserApnToken
 from schemas.FileSchema import PictureSchemaIn, S3PresignedUrlSchemaOut
 # Models
 from models.User import User, UserRoleEnum, REFERRAL_USER_CREDIT
@@ -20,6 +20,40 @@ from models.StripeApiClient import StripeApiClient
 from twilio.rest import Client
 import os
 router = APIRouter()
+
+
+def subscribe_to_marketing_channel_sns(apn_token):
+    """
+    Generate application endpoint and subscribe to marketing channel
+    Args:
+        apn_token ([str]): This is the apn token of user
+
+    Returns:
+        [str]: The pllatform endpoint arn
+    """
+    client = boto3.client('sns')
+    try:
+        endpoint_response = client.create_platform_endpoint(
+            PlatformApplicationArn=os.environ['IOS_SNS_PLATFORM_APPLICATION_ARN'],
+            Token=apn_token,
+        )['EndpointArn']
+    except Exception as e:
+        # case where user disabled endpoint response
+        logging.error(e)
+        raise HTTPException(
+            status.HTTP_500_INTERNAL_SERVER_ERROR, "Couldnt create application ")
+    marketing_sns_topic_arn = os.environ['MARKETING_TOPIC_ARN']
+    try:
+        response = client.subscribe(
+            TopicArn=marketing_sns_topic_arn,
+            Protocol='application',
+            Endpoint=endpoint_response
+        )
+    except Exception as e:
+        # case where user disabled endpoint response
+        logging.error(e)
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            "Couldnt subscribe user to topic")
 
 
 @router.post("/referral_code")
@@ -43,6 +77,15 @@ def post_referral_code(referral_code: ReferralCodeIn, current_user_sub: User = D
         current_user.credit = REFERRAL_USER_CREDIT
         session.commit()
         return status.HTTP_200_OK
+
+
+@router.post("/subscribe_marketing_sns")
+def post_subscribe_sns(user_apn_token: UserApnToken):
+    """
+    subscribe apn to marketing topic
+    """
+    subscribe_to_marketing_channel_sns(user_apn_token.apn_token)
+    return status.HTTP_200_OK
 
 
 @router.get('', response_model=UserSchemaOut)
@@ -70,6 +113,10 @@ def edit_user(user_put_body: UserSchemaPut, current_user_sub: User = Depends(get
             # If key is being edited
             if value is not None:
                 setattr(current_user, key, value)
+                # if new apn topic, create endpoint, subscribe to marketing topic
+                if key == "apn_token":
+                    subscribe_to_marketing_channel_sns(value)
+
         # push edits
         session.commit()
         return serialize(current_user)

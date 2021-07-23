@@ -87,3 +87,7 @@ class UserPaymentMethods(BaseModel):
 
 class ReferralCodeIn(BaseModel):
     referral_code: str
+
+
+class UserApnToken(BaseModel):
+    apn_token: str

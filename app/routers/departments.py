@@ -25,12 +25,12 @@ router = APIRouter()
 def get_departments():
     try:
         departments = json.loads(
-            redis_client.get("departmentss").decode("utf-8"))
+            redis_client.get("departments").decode("utf-8"))
     except:
         with session_scope() as session:
             departments = [serialize(x)
                            for x in session.query(Department).filter_by(is_active=True).order_by(Department.order.asc()).all()]
-            redis_client.set("departmentss", json.dumps(
+            redis_client.set("departments", json.dumps(
                 departments), REDIS_TTL)
 
     return departments
