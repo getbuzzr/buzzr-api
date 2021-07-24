@@ -30,6 +30,7 @@ class OrderErrorMessageEnum(str, enum.Enum):
 class PromoCodeErrorMessage(str, enum.Enum):
     PROMO_NOT_VALID = "PROMO_NOT_VALID"
     PROMO_ALREADY_REDEEMED = "PROMO_ALREADY_REDEEMED"
+    NOT_FIRST_ORDER="NOT_FIRST_ORDER"
 
 
 class CouponErrorMessage(str, enum.Enum):

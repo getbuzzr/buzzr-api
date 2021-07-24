@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table, Boolean
 from database import Base
 import logging
 import datetime
@@ -19,3 +19,4 @@ class PromoCode(Base):
     valid_from = Column(DateTime)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     num_redeems_allowed = Column(Integer)
+    only_first_order = Column(Boolean)
