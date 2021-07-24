@@ -231,6 +231,12 @@ def post_orders(order: OrderSchemaIn, current_user_sub: User = Depends(get_curre
                 raise HTTPException(status.HTTP_400_BAD_REQUEST,
                                     CustomErrorMessage(
                                         PromoCodeErrorMessage.PROMO_ALREADY_REDEEMED, error_message="This promo code has already been redeemed by this user").jsonify())
+            if promo_code_targeted.only_first_order:
+                if session.query(Order).filter_by(user_id=current_user.id).first():
+                    raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                    CustomErrorMessage(
+                                        PromoCodeErrorMessage.NOT_FIRST_ORDER, error_message="This promo code only works if its your first order").jsonify())
+                    
             promo_code_credit = promo_code_targeted.credit
         # check to see if the address exists
         # calculate cost and tax amount
