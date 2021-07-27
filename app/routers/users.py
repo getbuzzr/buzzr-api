@@ -73,7 +73,10 @@ def post_referral_code(referral_code: ReferralCodeIn, current_user_sub: User = D
         # no user found
         if referring_user is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
-        current_user.referring_user = referring_user.id
+        if referring_user.id == current_user.id:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, CustomErrorMessage(
+                UserErrorMessageEnum.CANT_REFER_SELF, error_message="User cant refer self").jsonify())
+        current_user.referrer_id = referring_user.id
         current_user.credit = REFERRAL_USER_CREDIT
         session.commit()
         return status.HTTP_200_OK
