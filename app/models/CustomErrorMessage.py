@@ -4,6 +4,7 @@ import json
 
 class UserErrorMessageEnum(str, enum.Enum):
     ALREADY_REFFERED = "ALREADY_REFFERED"
+    CANT_REFER_SELF = "CANT_REFER_SELF"
 
 
 class AddressErrorMessageEnum(str, enum.Enum):
@@ -30,7 +31,7 @@ class OrderErrorMessageEnum(str, enum.Enum):
 class PromoCodeErrorMessage(str, enum.Enum):
     PROMO_NOT_VALID = "PROMO_NOT_VALID"
     PROMO_ALREADY_REDEEMED = "PROMO_ALREADY_REDEEMED"
-    NOT_FIRST_ORDER="NOT_FIRST_ORDER"
+    NOT_FIRST_ORDER = "NOT_FIRST_ORDER"
 
 
 class CouponErrorMessage(str, enum.Enum):
