@@ -16,3 +16,6 @@ class ProductOrdered(Base):
     date_ordered = Column(DateTime, default=datetime.datetime.utcnow)
     order_id = Column(Integer, ForeignKey('order.id'))
     product_id = Column(Integer, ForeignKey('product.id'))
+    sale_price_cents = Column(Integer, default=0)
+    tax = Column(Float,default=0)
+    percent_discount = Column(Integer, default=0)
