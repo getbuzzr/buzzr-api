@@ -4,7 +4,7 @@ from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 # Models
-from models.Product import Product, product_tags
+from models.Product import Product, product_tags, ProductStatusEnum
 from models.User import User
 from models.Category import Category
 from models.ProductTag import ProductTag
@@ -55,7 +55,10 @@ def search(q: str = ""):
         search = Search(search_term=q)
         session.add(search)
         session.commit()
-        return [serialize(x) for x in items_searched_unique][:35]
+        # make sure only active items are returned in search
+        active_items = [
+            x for x in items_searched_unique if x.status == ProductStatusEnum.active]
+        return [serialize(x) for x in active_items][:35]
 
 
 @router.get('/popular', response_model=List[SearchSchemaOut])
