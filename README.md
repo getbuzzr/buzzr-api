@@ -54,3 +54,13 @@ All deploys are handled with the CI/CD pipeline
 1. CI/CD pipeline generates a docker image
 2. Docker image is pushed to ECR
 3. buzz elastic load balancer is updated with new docker images
+
+## Add Data to database
+
+On first install, there will be no data in the database. To get data perfom the following steps
+
+1. Download & install [sequelpro](https://www.sequelpro.com/)
+2. Open connection window and connect to dev database. Credentials in 1password
+3. Open connection window, open local database(docker container)
+4. goto `department`, `category`, `product`, `user` table on dev data base, select the rows you want and select `COPY as SQL INSERT`
+5. goto local database, select the `Query` option on the menum paste insert statement there, then `run current`
