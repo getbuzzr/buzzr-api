@@ -4,10 +4,16 @@ This repo contains all the code for buzzr api v2
 
 This app is a [FastAPI](https://fastapi.tiangolo.com/) app that is backed by MYSQL, and REDIS deployed on an elastic beanstalk application cluster
 
+## Prereqs
+
+1. python3.6> installed
+2. AWS CLI installed [instructions](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+3. @dzlau allows your AWS account to assume `dev_admin` role
+
 ## Docker Develop
 
 1. Set all `.envrc` variables. There is a `.env.sample`. You can get the current `.envrc` files from 1password
-2. Load AWS access key, secret and session token and replace in `.envrc` file `aws sts assume-role --role-arn "arn:aws:iam::824611589741:role/dev_admin" --role-session-name AWSCLI-Session --profile buzzr --output json --duration-seconds 43200`
+2. Load AWS access key, secret and session token and replace in `.envrc` file `aws sts assume-role --role-arn "arn:aws:iam::824611589741:role/dev_admin" --role-session-name AWSCLI-Session --output json --duration-seconds 43200`
 3. set `.envrc.docker` from one password also
 4. `docker-compose build`
 5. `docker-compose up`
@@ -18,7 +24,7 @@ This app is a [FastAPI](https://fastapi.tiangolo.com/) app that is backed by MYS
 
 1. Initialize virtual environment `python3 -m venv ENV; source ENV/bin/activate`
 2. Install requirements `pip3 install -r requirements.txt`
-3. Load AWS access key, secret and session token and replace in `.envrc` file `aws sts assume-role --role-arn "arn:aws:iam::824611589741:role/dev_admin" --role-session-name AWSCLI-Session --profile buzzr --output json --duration-seconds 43200`
+3. Load AWS access key, secret and session token and replace in `.envrc` file `aws sts assume-role --role-arn "arn:aws:iam::824611589741:role/dev_admin" --role-session-name AWSCLI-Session --output json --duration-seconds 43200`
 4. `source .envrc`
 5. run database migrations `cd app;alembic upgrade head;cd ..`
 6. `uvicorn main:app`
