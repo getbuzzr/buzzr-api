@@ -6,9 +6,11 @@ This app is a [FastAPI](https://fastapi.tiangolo.com/) app that is backed by MYS
 
 ## Docker Develop
 
-1. Set all `.env` variables. There is a `.env.sample`. You can get the current `.env` files from @dzlau
-2. `docker-compose build`
-3. `docker-compose up`
+1. Set all `.envrc` variables. There is a `.env.sample`. You can get the current `.envrc` files from 1password
+2. Load AWS access key, secret and session token and replace in `.envrc` file `aws sts assume-role --role-arn "arn:aws:iam::824611589741:role/dev_admin" --role-session-name AWSCLI-Session --profile buzzr --output json --duration-seconds 43200`
+3. set `.envrc.docker` from one password also
+4. `docker-compose build`
+5. `docker-compose up`
 
 ## Develop Local
 
@@ -16,8 +18,8 @@ This app is a [FastAPI](https://fastapi.tiangolo.com/) app that is backed by MYS
 
 1. Initialize virtual environment `python3 -m venv ENV; source ENV/bin/activate`
 2. Install requirements `pip3 install -r requirements.txt`
-3. Load AWS access key, secret and session token and replace in `.env` file `aws sts assume-role --role-arn "arn:aws:iam::824611589741:role/dev_admin" --role-session-name AWSCLI-Session --profile buzzr --output json --duration-seconds 43200`
-4. `source .env`
+3. Load AWS access key, secret and session token and replace in `.envrc` file `aws sts assume-role --role-arn "arn:aws:iam::824611589741:role/dev_admin" --role-session-name AWSCLI-Session --profile buzzr --output json --duration-seconds 43200`
+4. `source .envrc`
 5. run database migrations `cd app;alembic upgrade head;cd ..`
 6. `uvicorn main:app`
 7. Navigate to `http://127.0.0.1:8000`
