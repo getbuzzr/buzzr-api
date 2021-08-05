@@ -29,3 +29,8 @@ services:
       MYSQL_PASSWORD: ${DEV_DB_PASSWORD}
     ports:
       - "3306:3306"
+  redis-dev:
+    container_name: redis-docker
+    image: redis
+    ports:
+      - "6379:6379"
