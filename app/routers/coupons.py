@@ -50,6 +50,13 @@ def post_coupons(coupon_in: CouponSchemaIn, current_user_sub: User = Depends(get
                                 CustomErrorMessage(
                                     CouponErrorMessage.NO_COUPON_FOUND, error_message="This coupon code doesnt exist").jsonify())
         current_datetime = datetime.datetime.utcnow()
+        if coupon_targeted.num_redeems_allowed is not None:
+            num_redeems = len(session.query(coupons_redeemed).filter_by(
+                coupon_id=coupon_targeted.id).all())
+            if num_redeems >= coupon_targeted.num_redeems_allowed:
+                raise HTTPException(status.HTTP_400_BAD_REQUEST,
+                                    CustomErrorMessage(
+                                        CouponErrorMessage.TOO_MANY_REDEEMS, error_message="This coupon code has already been redeemed too many times").jsonify())
         # check to see if date is valid
         if current_datetime < coupon_targeted.valid_from or coupon_targeted.valid_until < current_datetime:
             raise HTTPException(status.HTTP_400_BAD_REQUEST,

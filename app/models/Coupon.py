@@ -15,4 +15,5 @@ class Coupon(Base):
     credit = Column(Integer)
     valid_until = Column(DateTime)
     valid_from = Column(DateTime)
+    num_redeems_allowed = Column(Integer)
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
