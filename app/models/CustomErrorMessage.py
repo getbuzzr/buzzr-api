@@ -38,6 +38,7 @@ class CouponErrorMessage(str, enum.Enum):
     NO_COUPON_FOUND = "NO_COUPON_FOUND"
     DATE_NOT_VALID = "DATE_NOT_VALID"
     COUPON_ALREADY_REDEEMED = "COUPON_ALREADY_REDEEMED"
+    TOO_MANY_REDEEMS = "TOO_MANY_REDEEMS"
 
 
 class CustomErrorMessage():
