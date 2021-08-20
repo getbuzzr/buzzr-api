@@ -67,6 +67,7 @@ class StripeApiClient():
                 currency=self.currency,
                 customer=stripe_customer_id,
                 payment_method_types=["card"],
+                description="Buzzr Delivery"
             )
         except Exception as e:
             logging.error(e)
