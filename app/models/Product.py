@@ -36,7 +36,7 @@ class Product(Base):
     category_id = Column(Integer, ForeignKey('category.id'))
     name = Column(String(200))
     stock = Column(Integer)
-    description = Column(String(300))
+    description = Column(String(1000))
     brand_name = Column(String(300))
     date_created = Column(DateTime, default=datetime.datetime.utcnow)
     department_id = Column(Integer, ForeignKey('department.id'))
